@@ -1,0 +1,20 @@
+name: xtream-strm-organizer
+services:
+  xtream-strm:
+    build:
+      context: /DATA/AppData/XtreamStrmOrganizer/app
+      dockerfile: Dockerfile
+    image: xtream-strm-organizer:1.7.2
+    container_name: xtream-strm-organizer
+    restart: unless-stopped
+    user: "1000:1000"
+    ports:
+      - "8686:8080"
+    environment:
+      TZ: Europe/Brussels
+      CONFIG_FILE: /app/data/config.json
+      OUTPUT_ROOT: /media
+      STRM_WRITE_WORKERS: "4"
+    volumes:
+      - /DATA/AppData/XtreamStrmOrganizer/config:/app/data
+      - /DATA/AppData/XtreamStrmOrganizer/Biblioteca_IPTV:/media

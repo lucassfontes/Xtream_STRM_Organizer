@@ -1,0 +1,24 @@
+services:
+  mock:
+    image: python:3.12-alpine
+    working_dir: /tests
+    volumes:
+      - ./:/tests:ro
+    command: ["python", "mock_xtream.py"]
+  organizer:
+    user: "${PUID:-1000}:${PGID:-1000}"
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      TZ: Europe/Brussels
+      OUTPUT_ROOT: /media
+      CONFIG_FILE: /app/data/config.json
+      STRM_WRITE_WORKERS: 4
+    ports:
+      - "127.0.0.1:18686:8080"
+    depends_on:
+      - mock
+    volumes:
+      - ${XTREAM_TEST_MEDIA_PATH:?Informe_XTREAM_TEST_MEDIA_PATH}:/media
+      - ${XTREAM_TEST_CONFIG_PATH:?Informe_XTREAM_TEST_CONFIG_PATH}:/app/data

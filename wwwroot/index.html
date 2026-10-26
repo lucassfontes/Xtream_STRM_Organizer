@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#0b121c" />
+<title>Xtream STRM Organizer • Painel</title>
+<style>
+:root{color-scheme:dark;--bg:#0b121c;--card:#141e2b;--card2:#182433;--line:#293647;--input:#0b1522;--text:#ecf2f9;--muted:#97a5b8;--green:#45ddb5;--green2:#b2fbe4;--error:#ff9b9e;--font:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);margin:0;font-family:var(--font);font-size:14px}button,input,select{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}.layout{min-height:100vh;display:grid;grid-template-columns:242px minmax(0,1fr)}
+.sidebar{position:sticky;top:0;height:100vh;background:#101824;border-right:1px solid #263243;padding:28px 16px;display:flex;flex-direction:column;gap:32px}.brand{display:flex;gap:11px;align-items:center;padding:0 10px}.mark{height:41px;width:41px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#1a806e,#4ee1b8);color:#052b21;font-size:22px;font-weight:900;box-shadow:0 7px 28px #2be5a122}.brand strong{letter-spacing:-.3px;font-size:15px}.brand small{display:block;font-size:10px;letter-spacing:1.65px;font-weight:750;color:var(--green);margin-top:3px}.nav{display:grid;gap:7px}.nav-title{font-size:10px;letter-spacing:2px;color:#687b90;font-weight:800;margin:11px 15px}.nav a{padding:13px 14px;color:#9aacc0;border-radius:11px;display:flex;align-items:center;gap:11px;font-weight:650}.nav a.active,.nav a:hover{background:#20372f;color:#79e8c7}.svg{width:18px;height:18px;flex-shrink:0}.side-bottom{margin-top:auto;border:1px solid #2f453f;border-radius:14px;padding:15px;background:#142922}.side-bottom strong{display:block;margin-bottom:7px;font-size:13px}.side-bottom p{margin:0;font-size:12px;color:#9db4a8;line-height:1.6}.version{font-size:11px;color:#76879c;text-align:center;margin-top:10px}
+.content{min-width:0;padding:0 clamp(18px,3.4vw,48px) 66px;max-width:1500px;width:100%;margin:0 auto}.topbar{height:84px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:15px}.crumb{font-size:13px;color:var(--muted)}.crumb b{color:var(--text)}.right{display:flex;align-items:center;gap:12px}.badge{font-size:12px;padding:8px 11px;border:1px solid #315d51;border-radius:99px;background:#15332c;color:#83f0ca;display:flex;gap:7px;align-items:center}.dot{width:7px;height:7px;display:inline-block;border-radius:99px;background:var(--green);box-shadow:0 0 0 3px #45ddb522}.exit{background:#1b2939;border:1px solid #324356;color:#b2c0d0;padding:9px 12px;border-radius:10px;font-weight:700}.exit:hover{color:white;background:#24364b}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:34px 0 25px}.eyebrow{color:var(--green);font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:850}.hero h1{font-size:clamp(26px,3.1vw,38px);line-height:1.16;letter-spacing:-1.4px;margin:9px 0}.hero p{color:var(--muted);line-height:1.6;margin:0}.hero-aside{display:flex;align-items:center;gap:10px;background:#162d2a;border:1px solid #2c594d;border-radius:14px;padding:15px;color:#baf4e0;max-width:240px;font-size:12px;line-height:1.5}.miniicon{width:32px;height:32px;padding:7px;border-radius:10px;background:#214b40;flex-shrink:0}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:20px}.metric{border:1px solid var(--line);border-radius:17px;background:var(--card);padding:20px;min-width:0}.metric-top{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:13px}.metric-icon{display:grid;place-items:center;width:33px;height:33px;border-radius:10px;color:var(--green);background:#1b3835}.metric b{display:block;font-size:29px;letter-spacing:-1px;margin-top:16px}.metric small{display:block;margin-top:5px;color:#7d90a5;font-size:11px}
+.main-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:19px}.card{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 10px 40px #050b140b}.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:24px}.card-title{display:flex;align-items:center;gap:11px}.round-icon{height:39px;width:39px;display:grid;place-items:center;border-radius:12px;color:var(--green);background:#1b3734}.card-head h2{font-size:16px;margin:0 0 5px;letter-spacing:-.25px}.card-head p{color:var(--muted);margin:0;font-size:12px;line-height:1.5}.chip{font-size:10px;border:1px solid #365846;color:#9bdfc9;padding:6px 9px;border-radius:9px;white-space:nowrap}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.field.full{grid-column:1/-1}label.main-label{display:block;color:#c3d0de;font-size:12px;font-weight:750;margin-bottom:8px}.control{width:100%;height:47px;padding:0 14px;border:1px solid #334559;background:var(--input);border-radius:10px;color:var(--text);outline:0;min-width:0}.control:focus{border-color:var(--green);box-shadow:0 0 0 3px #45ddb513}.control::placeholder{color:#6c7c92}.hint{color:#71869a;font-size:11px;line-height:1.5;margin:7px 0 0}.separator{height:1px;background:var(--line);margin:24px 0 19px}.label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:750;margin-bottom:14px}.label-row span{color:var(--muted);font-weight:450;font-size:11px}.checks{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:19px}.check{display:flex;align-items:center;gap:8px;cursor:pointer;background:#101e2c;border:1px solid #2b3d50;border-radius:10px;padding:11px 12px;font-size:12px;font-weight:650}.check input{accent-color:var(--green);width:16px;height:16px;margin:0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:23px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:10px;font-weight:750;font-size:12px;border:1px solid var(--line);transition:background .2s,filter .2s}.btn.primary{background:var(--green);color:#08251d;border-color:var(--green)}.btn.secondary{background:#203044;color:#d8e5f1;border-color:#35485d}.btn.danger{background:#3a252d;color:#ffc2c6;border-color:#684049}.btn:hover:not(:disabled){filter:brightness(1.08)}button:disabled{opacity:.48;cursor:not-allowed}.notice{min-height:20px;color:var(--green);font-size:12px;margin:13px 0 0;line-height:1.5}
+.phase-head{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#101d2a;border:1px solid #283e4b;border-radius:13px;padding:15px;margin-bottom:17px}.phase-head b{font-size:13px}.phase-head p{font-size:11px;color:var(--muted);margin:6px 0 0}.phase{font-size:11px;color:#88ebc8;border:1px solid #31584a;border-radius:20px;padding:7px 10px;background:#18372c;text-align:center}.meter{background:#293749;height:8px;overflow:hidden;border-radius:20px}.bar{width:0;height:100%;transition:width .35s;background:linear-gradient(90deg,#188c74,#58ecc0)}.progress{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted);margin:11px 0 21px}.progress strong{color:#c5d7e1}.log-title{font-size:12px;font-weight:800;margin:25px 0 12px}.log{height:220px;overflow:auto;padding:15px;background:#0b1420;border:1px solid #243549;border-radius:11px;white-space:pre-wrap;overflow-wrap:anywhere;color:#a6d8c5;font:11.5px/1.8 ui-monospace,Consolas,monospace}.progress-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:14px}.progress-details>div{background:#0d1925;border:1px solid #2b404c;border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:7px}.progress-details span{font-size:11px;color:var(--muted)}.progress-details strong{font-size:17px;color:var(--green)}.run-info{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0;color:#a3b7c8;font-size:11px}.run-info span{background:#182635;padding:7px 9px;border-radius:7px}.refresh-control{display:flex;align-items:center;flex-wrap:wrap;gap:9px;background:#111f2e;border:1px solid #314252;border-radius:10px;padding:12px;font-size:12px;cursor:pointer}.refresh-control input{accent-color:var(--green)}.refresh-control small{color:var(--muted)}.destination{font-size:11px;color:#91a3b8;line-height:1.6;margin:15px 0 0}.destination code{color:#b0edda;overflow-wrap:anywhere}
+.bottom-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:19px;margin-top:19px}.tree{background:#0b1420;border:1px solid #263649;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.85 ui-monospace,Consolas,monospace;color:#b7e9d6;padding:18px;margin:0}.caption{font-size:12px;color:var(--muted);line-height:1.6}.info-row{display:flex;align-items:flex-start;gap:12px;margin:15px 0}.info-row strong{display:block;font-size:12px;margin:2px 0 5px}.info-row p{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.info-row .round-icon{flex-shrink:0}.foot{margin:30px 0 0;color:#708196;font-size:11px;text-align:center}
+@media(max-width:1120px){.sidebar{width:210px}.layout{grid-template-columns:210px minmax(0,1fr)}.main-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}.metric{padding:16px}}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto;padding:12px 16px;gap:12px}.nav{display:flex;gap:5px;overflow:auto}.nav a{white-space:nowrap;font-size:12px;padding:10px}.nav-title,.side-bottom,.version{display:none}.topbar{height:70px}.hero{padding:25px 0}.hero-aside{display:none}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:18px}}
+@media(max-width:460px){.field-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.badge{display:none}.metrics{gap:9px}.metric b{font-size:23px}.metrics .metric{padding:14px}.checks{display:grid;grid-template-columns:1fr}.actions .btn{flex:1}.hero h1{font-size:28px}}
+.schedule-highlight{display:flex;align-items:flex-start;gap:15px;background:linear-gradient(110deg,#173a34,#0e292e);border:1px solid #31735d;border-radius:15px;padding:20px;margin:18px 0 10px}.schedule-icon{display:grid;place-items:center;width:43px;height:43px;flex-shrink:0;font-size:24px;background:#285749;color:#a2ffdc;border-radius:12px}.schedule-kicker{font-size:10px;letter-spacing:1.5px;font-weight:900;color:#83dfc3;margin-bottom:8px}.schedule-highlight strong{font-size:clamp(18px,2.3vw,24px);color:#f5fff9;line-height:1.3}.schedule-highlight p{margin:7px 0 6px;color:#b2e8d7;font-size:12px}.schedule-zone{font-size:11px;color:#8ca9a5}.schedule-list-head{margin-top:21px;color:#c8dcd7;font-weight:700;font-size:12px}.schedule-list{display:grid;gap:7px;margin-top:10px}.schedule-list-item{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center;border:1px solid #304b47;background:#0f2027;border-radius:9px;padding:10px 13px;color:#cfe5dc;font-size:12px}.schedule-list-item span{color:#98b9ad}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+ <div class="brand"><span class="mark">▶</span><span><strong>XTREAM</strong><small>STRM ORGANIZER</small></span></div>
+ <nav class="nav" aria-label="Menu principal"><span class="nav-title">MENU PRINCIPAL</span>
+  <a class="active" href="#painel"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Painel</a>
+  <a href="#conexao"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="m7 3 5 4 5-4"/></svg>Conexão Xtream</a>
+  <a href="#agenda">⏱ Atualizações</a>
+  <a href="#geracao"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></svg>Geração STRM</a>
+  <a href="#estrutura"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h7l2 3h9v11H3z"/></svg>Estrutura de pastas</a>
+ </nav>
+ <div class="side-bottom"><strong>◆ Sua biblioteca, organizada</strong><p>As categorias são preservadas exatamente como vêm da API, sem filtros de conteúdo.</p></div>
+ <div class="version">Versão 1.6.0 • C# / Docker</div>
+</aside>
+<main class="content" id="painel">
+ <div class="topbar"><div class="crumb">Workspace <span aria-hidden="true"> / </span> <b>Visão geral</b></div><div class="right"><span class="badge"><span class="dot"></span>Painel conectado</span><button class="exit" id="logout" type="button">Sair da conta</button></div></div>
+ <div class="hero"><div><span class="eyebrow">CENTRAL DE GERENCIAMENTO</span><h1>Organize seu conteúdo IPTV</h1><p>Organize sua lista Xtream em arquivos <strong>.strm</strong> sem apagar ou sobrescrever os já existentes.</p></div><div class="hero-aside"><svg class="miniicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 6v6c0 5 4 8 8 10 4-2 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg><span>Os .strm existentes são preservados. Só novos arquivos são criados.</span></div></div>
+ <section class="metrics" aria-label="Resumo da biblioteca">
+  <div class="metric"><div class="metric-top">TV ao vivo <span class="metric-icon">▣</span></div><b id="channels">0</b><small>Canais processados</small></div>
+  <div class="metric"><div class="metric-top">Filmes <span class="metric-icon">▤</span></div><b id="films">0</b><small>Arquivos de filmes</small></div>
+  <div class="metric"><div class="metric-top">Séries <span class="metric-icon">▥</span></div><b id="shows">0</b><small>Séries organizadas</small></div>
+  <div class="metric"><div class="metric-top">Episódios <span class="metric-icon">▶</span></div><b id="episodes">0</b><small>Atalhos de episódios</small></div>
+ </section>
+ <div class="main-grid">
+  <section class="card" id="conexao"><header class="card-head"><div class="card-title"><span class="round-icon">⌁</span><div><h2>Conexão Xtream</h2><p>Dados de acesso à API do provedor</p></div></div><span class="chip">API Xtream</span></header>
+  <div class="field-grid" style="margin-bottom:17px"><div class="field full"><label class="main-label" for="profileSelect">Lista cadastrada</label><select class="control" id="profileSelect"><option value="">Nova conexão</option></select></div></div>
+  <div class="actions" style="margin-top:0;margin-bottom:16px"><button class="btn secondary" type="button" id="newProfile">＋ Nova lista</button><button class="btn danger" type="button" id="deleteProfile">Remover lista</button></div>
+  <form id="configForm"><div class="field-grid">
+   <div class="field full"><label class="main-label" for="profileName">Nome da lista</label><input class="control" required id="profileName" maxlength="60" placeholder="Ex.: Minha IPTV" /></div>
+   <div class="field full"><label class="main-label" for="url">URL do servidor</label><input class="control" required type="url" id="url" placeholder="http://servidor:porta" spellcheck="false" /></div>
+   <div class="field"><label class="main-label" for="username">Usuário Xtream</label><input class="control" required id="username" type="text" autocomplete="off" placeholder="Seu usuário" /></div>
+   <div class="field"><label class="main-label" for="password">Senha Xtream</label><input class="control" id="password" type="password" autocomplete="new-password" placeholder="Sua senha" /><p class="hint" id="passwordHint">Informe sua senha para salvar.</p></div>
+  </div><div class="separator"></div>
+  <div class="label-row">Conteúdo que será organizado <span>Sem filtro de conteúdo</span></div>
+  <div class="checks"><label class="check"><input id="live" type="checkbox" checked /> TV ao vivo</label><label class="check"><input id="movies" type="checkbox" checked /> Filmes</label><label class="check"><input id="series" type="checkbox" checked /> Séries</label></div>
+  <div class="field-grid">
+   <div class="field"><label class="main-label" for="liveExtension">Formato do stream de TV</label><select class="control" id="liveExtension"><option value="ts">TS (.ts)</option><option value="m3u8">HLS (.m3u8)</option></select></div>
+   <div class="field"><label class="main-label" for="seriesConcurrency">Velocidade de análise de séries</label><select class="control" id="seriesConcurrency"><option value="4">4 simultâneas · Conservador</option><option value="8" selected>8 simultâneas · Equilibrado</option><option value="16">16 simultâneas · Rápido</option></select><p class="hint">Se o servidor limitar requisições, diminua para 4.</p></div>
+  </div>
+  <div class="actions"><button class="btn primary" type="submit" id="save">✓ &nbsp; Salvar conexão</button><button class="btn secondary" type="button" id="test">↗ &nbsp; Testar conexão</button></div></form><p id="notice" role="status" class="notice"></p>
+  </section>
+  <section class="card" id="geracao"><header class="card-head"><div class="card-title"><span class="round-icon">⇩</span><div><h2>Gerador de biblioteca</h2><p>Acompanhe a organização dos arquivos</p></div></div></header>
+   <div class="phase-head"><div><b>Estado do processamento</b><p>Sincronização Xtream → STRM</p></div><span class="phase" id="phase">Aguardando</span></div>
+   <div class="meter" role="progressbar" aria-label="Progresso de séries" aria-valuemin="0" aria-valuemax="100" id="meter"><div class="bar" id="bar"></div></div><div class="progress"><span id="progress">Aguardando início</span><strong id="pct">0%</strong></div>
+   <div class="progress-details" aria-live="off">
+    <div><span>Detalhes reaproveitados</span><strong id="cachedCount">0</strong></div>
+    <div><span>Consultas novas</span><strong id="fetchedCount">0</strong></div>
+    <div><span>Existentes ignorados</span><strong id="reusedCount">0</strong></div>
+    <div><span>Novos STRM criados</span><strong id="writtenCount">0</strong></div>
+    <div><span>Arquivos aguardando gravação</span><strong id="pendingCount">0</strong></div>
+    <div><span>Gravadores simultâneos</span><strong id="writerCount">4</strong></div>
+   </div>
+   <div class="run-info"><span id="speed">Velocidade: —</span><span id="eta">Tempo restante: —</span><span id="retries">Tentativas repetidas: 0</span></div>
+   <label class="refresh-control"><input type="checkbox" id="forceRefresh" /> Consultar todos os episódios novamente <small>(ignora o cache, mas nunca sobrescreve .strm existentes)</small></label>
+   <div class="actions"><button id="start" class="btn primary" type="button">▶ &nbsp; Atualizar biblioteca</button><button id="cancel" class="btn danger" type="button" disabled>✕ &nbsp; Cancelar</button></div>
+   <div class="log-title">Atividade recente · arquivos preservados e ignorados</div><div class="log" id="log" role="log" aria-live="off">As mensagens aparecerão aqui.</div>
+   <p class="destination">Gravação paralela otimizada com fila limitada e proteção contra sobrescrita. Arquivos .strm existentes nunca são removidos, substituídos ou modificados.<br>Local no contêiner: <code>/media/[nome da conexão]</code> (biblioteca montada em Biblioteca_IPTV no host)<br>Os arquivos ficam na pasta mapeada no Docker.</p>
+  </section>
+ </div>
+ <section class="card" id="agenda" style="margin-top:19px">
+ <header class="card-head"><div class="card-title"><span class="round-icon">⏱</span><div><h2>Atualização automática</h2><p>Agendamento independente para a lista selecionada, mesmo após reiniciar o Docker.</p></div></div><span class="chip">12h / 24h</span></header>
+ <div class="field-grid">
+  <div class="field full"><label class="check"><input id="autoUpdate" type="checkbox" form="configForm" /> Ativar atualização automática desta lista</label></div>
+  <div class="field"><label class="main-label" for="intervalHours">Intervalo</label><select id="intervalHours" class="control" form="configForm"><option value="12">A cada 12 horas</option><option value="24" selected>A cada 1 dia (24h)</option></select></div>
+  <div class="field"><label class="main-label" for="runTimeLocal">Horário da execução (servidor)</label><input id="runTimeLocal" class="control" type="time" value="03:00" step="60" form="configForm" /><p class="hint">Com 12h, executa neste horário e 12 horas depois. Com 24h, uma vez por dia.</p></div>
+  <div class="field"><label class="main-label">Conteúdo a atualizar</label><div class="checks"><label class="check"><input id="autoLive" type="checkbox" checked /> TV</label><label class="check"><input id="autoMovies" type="checkbox" checked /> Filmes</label><label class="check"><input id="autoSeries" type="checkbox" checked /> Séries</label></div></div>
+ </div>
+ <div class="schedule-highlight" aria-live="polite">
+   <div class="schedule-icon">◷</div><div><div class="schedule-kicker">PRÓXIMA EXECUÇÃO</div><strong id="nextRunTime">Ainda não agendada</strong><p id="nextRunCountdown">Ative e salve o agendamento para escolher quando atualizar.</p><div class="schedule-zone" id="serverZone">Fuso do servidor: —</div></div>
+ </div>
+ <p id="nextRun" class="caption">Salve a conexão para programar sua primeira atualização.</p>
+ <div class="schedule-list-head">Outras listas programadas</div><div id="allSchedules" class="schedule-list">Nenhuma lista programada.</div>
+ <div class="actions"><button class="btn primary" id="saveSchedule" type="button">✓ Salvar agendamento</button></div>
+ <p class="caption">Você escolhe quais conteúdos serão atualizados. Os arquivos .strm já existentes nunca serão sobrescritos nem apagados. O serviço verifica a agenda automaticamente a cada 30 segundos.</p>
+</section>
+ <div class="bottom-grid" id="estrutura">
+  <section class="card"><header class="card-head"><div class="card-title"><span class="round-icon">▤</span><div><h2>Estrutura de pastas</h2><p>Pastas geradas com os nomes das categorias originais</p></div></div></header><pre class="tree">Biblioteca_IPTV/
+└── Minha IPTV/
+  ├── TV ao vivo/
+│   ├── BRASIL/Canal de exemplo.strm
+│   └── XXX/Outro canal.strm
+  ├── Filmes/
+│   ├── Ação/Nome do filme.strm
+│   └── 18+/Outro filme.strm
+  └── Series/
+    └── Drama/Nome da série/
+        ├── Temporada 01/S01E01 - Episódio.strm
+        └── Temporada 02/S02E01 - Episódio.strm</pre><p class="caption">São exemplos. Nenhuma categoria é excluída, renomeada por critério de conteúdo ou enviada a uma pasta especial.</p></section>
+  <section class="card"><header class="card-head"><div class="card-title"><span class="round-icon">ⓘ</span><div><h2>Como funciona</h2><p>Biblioteca pronta para seus players</p></div></div></header>
+   <div class="info-row"><span class="round-icon">1</span><div><strong>Conecte à API</strong><p>Preencha a URL, o usuário e a senha Xtream fornecidos pelo seu provedor.</p></div></div>
+   <div class="info-row"><span class="round-icon">2</span><div><strong>Organize as tags</strong><p>O sistema usa as categorias originais, incluindo todas as categorias sem filtros.</p></div></div>
+   <div class="info-row"><span class="round-icon">3</span><div><strong>Crie os arquivos .strm</strong><p>Cada canal, filme e episódio recebe um arquivo com o link do seu stream.</p></div></div>
+   <div class="separator"></div><p class="caption">Compatível com bibliotecas que suportam arquivos .strm, como Emby, Jellyfin e Kodi, conforme a configuração de cada player.</p>
+  </section>
+ </div>
+ <div class="foot">Xtream STRM Organizer v1.7.2 • Sua biblioteca no seu próprio servidor</div>
+</main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+async function api(path,method='GET',data){
+ const response=await fetch(path,{method,credentials:'same-origin',headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined});
+ if(response.status===401){location.replace('/login');throw Error('Sessão expirada. Entre novamente.');}
+ const result=await response.json().catch(()=>({error:'Resposta inesperada do servidor.'}));
+ if(!response.ok)throw Error(result.error || 'Erro de comunicação.');return result;
+}
+function notice(msg,error=false){$('notice').textContent=msg;$('notice').style.color=error?'var(--error)':'var(--green)';}
+let currentProfileId='';
+let knownProfiles=[];
+let selectedNextUtc=null;
+let selectedIsScheduled=false;
+const defaults={id:'',name:'Minha IPTV',url:'',username:'',passwordSaved:false,live:true,movies:true,series:true,liveExtension:'ts',seriesConcurrency:8,autoUpdate:false,autoLive:true,autoMovies:true,autoSeries:true,intervalHours:24,runTimeLocal:'03:00'};
+function dateText(d){return d?new Date(d).toLocaleString('pt-BR'): 'Não programada';}
+function renderNext(x){
+ selectedIsScheduled=!!x.autoUpdate;
+ selectedNextUtc=x.autoUpdate&&x.nextRunUtc?Date.parse(x.nextRunUtc):null;
+ $('nextRunTime').textContent=selectedNextUtc?x.nextRunServer:'Ainda não agendada';
+ $('serverZone').textContent='Fuso do servidor: '+(x.serverTimeZone||'—');
+ $('nextRun').textContent=`Última execução automática: ${x.lastRunServer||'—'} · Verificação da agenda a cada 30 segundos.`;
+ renderCountdown();
+}
+function renderCountdown(){
+ const el=$('nextRunCountdown');
+ if(!selectedIsScheduled || !Number.isFinite(selectedNextUtc)){el.textContent='Ative e salve o agendamento para escolher quando atualizar.';return;}
+ const n=Math.max(0,Math.floor((selectedNextUtc-Date.now())/1000));
+ if(n===0){el.textContent='Horário alcançado: aguardando a próxima verificação ou uma sincronização em andamento.';return;}
+ const days=Math.floor(n/86400),hours=Math.floor(n%86400/3600),mins=Math.floor(n%3600/60),secs=n%60;
+ el.textContent=`Faltam ${days?days+' dia(s), ':''}${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')} para a execução.`;
+}
+function renderScheduleList(){
+ const active=knownProfiles.filter(x=>x.autoUpdate&&x.nextRunUtc);
+ const list=$('allSchedules');list.replaceChildren();
+ if(!active.length){list.textContent='Nenhuma lista programada.';return;}
+ active.slice().sort((a,b)=>Date.parse(a.nextRunUtc)-Date.parse(b.nextRunUtc)).forEach(x=>{
+ const line=document.createElement('div');line.className='schedule-list-item';
+ const name=document.createElement('strong');name.textContent=x.name;
+ const when=document.createElement('span');when.textContent=`${x.nextRunServer} · ${x.intervalHours}h`;
+ line.append(name,when);list.append(line);
+ });
+}
+
+function showProfile(x){
+ currentProfileId=x.id||'';
+ $('profileSelect').value=currentProfileId;
+ $('profileName').value=x.name||'Minha IPTV';$('url').value=x.url||'';$('username').value=x.username||'';
+ $('password').value='';$('passwordHint').textContent=x.passwordSaved?'Senha salva. Deixe em branco para manter.':'Informe a senha Xtream para salvar.';
+ $('live').checked=x.live;$('movies').checked=x.movies;$('series').checked=x.series;
+ $('liveExtension').value=x.liveExtension||'ts';$('seriesConcurrency').value=String(x.seriesConcurrency||8);
+ $('autoUpdate').checked=!!x.autoUpdate;$('intervalHours').value=String(x.intervalHours||24);
+ $('runTimeLocal').value=x.runTimeLocal||'03:00';
+ $('autoLive').checked=x.autoLive!==false;$('autoMovies').checked=x.autoMovies!==false;$('autoSeries').checked=x.autoSeries!==false;
+ renderNext(x);
+}
+async function loadProfiles(preferred){
+ const list=await api('/api/profiles');knownProfiles=list;
+ const select=$('profileSelect');select.replaceChildren();
+ const empty=document.createElement('option');empty.value='';empty.textContent='Nova conexão';select.append(empty);
+ list.forEach(p=>{const op=document.createElement('option');op.value=p.id;op.textContent=p.name+(p.autoUpdate?' ⏱':'');select.append(op);});
+ const profile=list.find(p=>p.id===(preferred===undefined?currentProfileId:preferred)) || (preferred===''?null:list[0]);
+ showProfile(profile||defaults);renderScheduleList();
+}
+$('profileSelect').onchange=()=>showProfile(knownProfiles.find(p=>p.id===$('profileSelect').value)||defaults);
+$('newProfile').onclick=()=>{showProfile(defaults);notice('Preencha os dados da nova lista e clique em Salvar conexão.');};
+$('deleteProfile').onclick=async()=>{
+ if(!currentProfileId){notice('Selecione uma lista cadastrada primeiro.',true);return;}
+ if($('deleteProfile').dataset.confirm!==currentProfileId){$('deleteProfile').dataset.confirm=currentProfileId;notice('Para confirmar a remoção do cadastro (os arquivos .strm serão mantidos), clique novamente em Remover lista.');return;}
+ try{await api('/api/profiles/'+encodeURIComponent(currentProfileId),'DELETE');$('deleteProfile').dataset.confirm='';currentProfileId='';await loadProfiles('');notice('Cadastro removido. Os arquivos .strm foram preservados.');}catch(e){notice(e.message,true);}
+};
+function profileData(){return {
+ id:currentProfileId,name:$('profileName').value,url:$('url').value,username:$('username').value,
+ password:$('password').value,live:$('live').checked,movies:$('movies').checked,series:$('series').checked,
+ liveExtension:$('liveExtension').value,seriesConcurrency:Number($('seriesConcurrency').value),
+ autoUpdate:$('autoUpdate').checked,intervalHours:Number($('intervalHours').value),runTimeLocal:$('runTimeLocal').value,
+ autoLive:$('autoLive').checked,autoMovies:$('autoMovies').checked,autoSeries:$('autoSeries').checked
+};}
+async function saveProfile(){
+ $('save').disabled=true;$('saveSchedule').disabled=true;
+ try{const p=await api('/api/settings','POST',profileData());await loadProfiles(p.id);notice('Conexão e agendamento salvos na pasta config do projeto.');}
+ catch(e){notice(e.message,true);}
+ finally{$('save').disabled=false;$('saveSchedule').disabled=false;}
+}
+$('configForm').addEventListener('submit',async e=>{e.preventDefault();await saveProfile();});
+$('saveSchedule').onclick=()=>saveProfile();
+$('test').onclick=async()=>{
+ $('test').disabled=true;notice('Testando conexão salva…');
+ try{const r=await api('/api/test','POST',{profileId:currentProfileId});notice(r.message);}catch(e){notice(e.message,true);}finally{$('test').disabled=false;}
+};
+$('start').onclick=async()=>{try{await api('/api/start','POST',{forceRefresh:$('forceRefresh').checked,profileId:currentProfileId});notice('Atualização iniciada.');await status();}catch(e){notice(e.message,true);}};
+$('cancel').onclick=async()=>{try{await api('/api/cancel','POST');notice('Cancelamento solicitado.');}catch(e){notice(e.message,true);}};
+$('logout').onclick=async()=>{try{await api('/api/auth/logout','POST');}finally{location.replace('/login');}};
+for(const link of document.querySelectorAll('.nav a'))link.addEventListener('click',()=>{for(const l of document.querySelectorAll('.nav a'))l.classList.remove('active');link.classList.add('active');});
+function duration(seconds){
+ if(seconds===null||seconds===undefined||!Number.isFinite(seconds))return 'calculando…';
+ const n=Math.max(0,Math.round(seconds));if(n<60)return `${n}s`;
+ if(n<3600)return `${Math.floor(n/60)}min ${n%60}s`;
+ return `${Math.floor(n/3600)}h ${Math.floor(n%3600/60)}min`;
+}
+async function status(){
+ try{
+  const s=await api('/api/status');
+  $('phase').textContent=s.phase;$('channels').textContent=s.channels;$('films').textContent=s.movies;
+  $('shows').textContent=s.series;$('episodes').textContent=s.episodes;
+  $('start').disabled=s.running;$('cancel').disabled=!s.running;$('save').disabled=s.running;
+  $('seriesConcurrency').disabled=s.running;$('forceRefresh').disabled=s.running;
+  $('cachedCount').textContent=s.seriesCached||0;$('fetchedCount').textContent=s.seriesFetched||0;
+  $('reusedCount').textContent=s.filesReused||0;$('writtenCount').textContent=s.filesWritten||0;
+  $('pendingCount').textContent=s.filesPending||0;$('writerCount').textContent=s.writeWorkers||4;
+  $('speed').textContent='Velocidade: '+(s.seriesPerSecond?`${s.seriesPerSecond.toFixed(2)} séries/s`:'—');
+  $('eta').textContent='Tempo restante: '+(s.seriesTotal&&s.running?duration(s.etaSeconds):'—');
+  $('retries').textContent='Tentativas repetidas: '+(s.requestsRetried||0);
+  const completed=s.phase==='Concluído'||s.phase==='Concluído com avisos';
+  const seriesPct=s.seriesTotal?Math.min(100,Math.round(100*s.seriesProcessed/s.seriesTotal)):(completed?100:(s.running?10:0));
+  const pct=s.running&&s.filesPending>0?Math.min(99,seriesPct):seriesPct;
+  $('progress').textContent=(s.profileName?`${s.automatic?'Automática':'Manual'}: ${s.profileName} • `:'')+(s.seriesTotal?`Séries: ${s.seriesProcessed}/${s.seriesTotal} • Em fila: ${s.filesPending||0} • Avisos: ${s.errors}`:`Em fila: ${s.filesPending||0} • Avisos: ${s.errors}`);
+  $('bar').style.width=pct+'%';$('meter').setAttribute('aria-valuenow',String(pct));$('pct').textContent=pct+'%';
+  $('log').textContent=s.messages.join('\n')||'As mensagens aparecerão aqui.';
+ }catch(e){$('phase').textContent='Sem conexão';}
+}
+loadProfiles().catch(e=>notice(e.message,true));status();setInterval(status,1800);setInterval(renderCountdown,1000);
+setInterval(async()=>{try{const savedId=currentProfileId;const data=await api('/api/profiles');knownProfiles=data;const selected=data.find(x=>x.id===savedId);if(selected){renderNext(selected);}renderScheduleList();}catch(e){}},15000);
+</script>
+</body></html>
