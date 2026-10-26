@@ -1,21 +1,3 @@
-# Xtream STRM Organizer v1.7.3 — Instalação via GitHub e ZimaOS
-
-**Instrução atual de instalação (recomendada):** veja [README-ZimaOS.md](README-ZimaOS.md). Essa modalidade não precisa copiar código C# para o ZimaOS; compila no GitHub e instala por imagem GHCR.
-
-**IMPORTANTE:** publicar o ZIP aqui não publica a imagem automaticamente. É preciso criar o repositório no GitHub, enviar os arquivos e esperar o Actions publicar a imagem.
-
----
-
-## Documentação das funcionalidades e testes locais
-
-# Xtream STRM Organizer v1.7.3 — Instalação via GitHub e ZimaOS
-
-**Instrução atual de instalação (recomendada):** veja [README-ZimaOS.md](README-ZimaOS.md). Essa modalidade não precisa copiar código C# para o ZimaOS; compila no GitHub e instala por imagem GHCR.
-
-**IMPORTANTE:** publicar o ZIP aqui não publica a imagem automaticamente. É preciso criar o repositório no GitHub, enviar os arquivos e esperar o Actions publicar a imagem.
-
----
-
 ## Documentação das funcionalidades e testes locais
 
 # Xtream STRM Organizer v1.7.3 — Instalação via GitHub e ZimaOS
