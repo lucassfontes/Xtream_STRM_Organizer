@@ -16,6 +16,13 @@ public sealed class ConnectionSettings
     public bool AutoLive { get; set; } = true;
     public bool AutoMovies { get; set; } = true;
     public bool AutoSeries { get; set; } = true;
+    // Null preserves the previous behavior: inherit manual metadata options.
+    public bool? AutoLiveImages { get; set; }
+    public bool? AutoLiveNfo { get; set; }
+    public bool? AutoMovieImages { get; set; }
+    public bool? AutoMovieNfo { get; set; }
+    public bool? AutoSeriesImages { get; set; }
+    public bool? AutoSeriesNfo { get; set; }
     public DateTimeOffset? NextRunUtc { get; set; }
     public DateTimeOffset? LastRunUtc { get; set; }
     public string Url { get; set; } = "";
@@ -25,6 +32,12 @@ public sealed class ConnectionSettings
     public bool Movies { get; set; } = true;
     public bool Series { get; set; } = true;
     public string LiveExtension { get; set; } = "ts";
+    public bool LiveImages { get; set; }
+    public bool LiveNfo { get; set; }
+    public bool MovieImages { get; set; }
+    public bool MovieNfo { get; set; }
+    public bool SeriesImages { get; set; }
+    public bool SeriesNfo { get; set; }
     public int SeriesConcurrency { get; set; } = 8;
 }
 
@@ -42,6 +55,12 @@ public sealed class PublicSettings
     public bool AutoLive { get; set; } = true;
     public bool AutoMovies { get; set; } = true;
     public bool AutoSeries { get; set; } = true;
+    public bool AutoLiveImages { get; set; }
+    public bool AutoLiveNfo { get; set; }
+    public bool AutoMovieImages { get; set; }
+    public bool AutoMovieNfo { get; set; }
+    public bool AutoSeriesImages { get; set; }
+    public bool AutoSeriesNfo { get; set; }
     public DateTimeOffset? NextRunUtc { get; set; }
     public DateTimeOffset? LastRunUtc { get; set; }
     public string Url { get; set; } = "";
@@ -54,6 +73,12 @@ public sealed class PublicSettings
     public bool Movies { get; set; }
     public bool Series { get; set; }
     public string LiveExtension { get; set; } = "ts";
+    public bool LiveImages { get; set; }
+    public bool LiveNfo { get; set; }
+    public bool MovieImages { get; set; }
+    public bool MovieNfo { get; set; }
+    public bool SeriesImages { get; set; }
+    public bool SeriesNfo { get; set; }
     public int SeriesConcurrency { get; set; } = 8;
 }
 

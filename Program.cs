@@ -16,8 +16,9 @@ builder.Services.AddHostedService<AutoUpdateService>();
 builder.Services.AddHttpClient("xtream", c =>
 {
     c.Timeout = TimeSpan.FromSeconds(120);
-    c.DefaultRequestHeaders.UserAgent.ParseAdd("XtreamStrmOrganizer/1.7");
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("XtreamStrmOrganizer/1.8.2");
 });
+builder.Services.AddHttpClient("artwork", c => c.Timeout = TimeSpan.FromSeconds(30));
 var configFile = Path.GetFullPath(builder.Configuration["CONFIG_FILE"] ?? "/app/data/config.json");
 var keysDir = Path.Combine(Path.GetDirectoryName(configFile)!, "keys");
 Directory.CreateDirectory(keysDir);
@@ -57,7 +58,7 @@ app.Use(async (ctx, next) =>
     var path = ctx.Request.Path;
     var publicPath = path == "/health" || path == "/api/auth/setup-status" || path == "/api/auth/setup"
         || path == "/api/auth/login" || path == "/login" || path == "/login.html"
-        || path == "/setup" || path == "/setup.html";
+        || path == "/setup" || path == "/setup.html" || path == "/responsive.css" || path == "/icon.png";
     if (!account.Initialized && !publicPath)
     {
         if (path.StartsWithSegments("/api")) ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
@@ -76,7 +77,8 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapGet("/setup", (AccountStore account) => Results.Redirect(account.Initialized ? "/login" : "/setup.html"));
-app.MapGet("/login", (AccountStore account) => Results.Redirect(account.Initialized ? "/login.html" : "/setup"));
+app.MapGet("/login", (AccountStore account, HttpContext ctx) => Results.Redirect(
+    !account.Initialized ? "/setup" : ctx.User.Identity?.IsAuthenticated == true ? "/" : "/login.html"));
 app.MapGet("/api/auth/setup-status", (AccountStore account) => Results.Ok(new { initialized = account.Initialized }));
 app.MapPost("/api/auth/setup", IResult (AccountStore account, SetupRequest request) =>
 {
@@ -96,7 +98,11 @@ app.MapPost("/api/auth/login", async Task<IResult> (HttpContext ctx, AccountStor
     var principal = new ClaimsPrincipal(new ClaimsIdentity(
         [new Claim(ClaimTypes.Name, accounts.Username)], CookieAuthenticationDefaults.AuthenticationScheme));
     await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
-        new AuthenticationProperties { IsPersistent = false });
+        new AuthenticationProperties
+        {
+            IsPersistent = input.RememberMe,
+            ExpiresUtc = DateTimeOffset.UtcNow.Add(input.RememberMe ? TimeSpan.FromDays(30) : TimeSpan.FromHours(12))
+        });
     return Results.Ok(new { ok = true });
 }).RequireRateLimiting("auth");
 app.MapPost("/api/auth/logout", async (HttpContext ctx) =>
@@ -106,7 +112,7 @@ app.MapPost("/api/auth/logout", async (HttpContext ctx) =>
 });
 app.MapGet("/api/auth/me", (HttpContext ctx) => Results.Ok(new { username = ctx.User.Identity?.Name }));
 
-app.MapGet("/health", () => Results.Ok(new { ok = true, app = "Xtream STRM Organizer", version = "1.7.3" }));
+app.MapGet("/health", () => Results.Ok(new { ok = true, app = "Xtream STRM Organizer", version = "1.8.2" }));
 app.MapGet("/api/profiles", (SettingsStore store) => Results.Ok(store.Profiles()));
 app.MapGet("/api/settings", IResult (SettingsStore store, string? id) =>
 {
@@ -135,6 +141,18 @@ app.MapPost("/api/test", async Task<IResult> (Organizer engine, ProfileRequest? 
     catch (Exception e) when (e is ArgumentException or InvalidOperationException or UnauthorizedAccessException or HttpRequestException or TaskCanceledException or JsonException)
     { return Results.BadRequest(new { error = "Falha na conexão: verifique URL, usuário, senha e servidor." }); }
 });
+app.MapGet("/api/warnings", IResult (Organizer engine) =>
+{
+    try
+    {
+        if (!File.Exists(engine.WarningLogPath))
+            return Results.File(System.Text.Encoding.UTF8.GetBytes("Nenhum aviso registrado até o momento.\n"), "text/plain; charset=utf-8", "log_avisos.txt");
+        var stream = new FileStream(engine.WarningLogPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        return Results.File(stream, "text/plain; charset=utf-8", "log_avisos.txt");
+    }
+    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+    { return Results.Json(new { error = "Não foi possível ler log_avisos.txt. Confira a pasta config." }, statusCode: 500); }
+});
 app.MapGet("/api/status", (Organizer engine) => Results.Ok(engine.Snapshot()));
 app.MapPost("/api/start", IResult (Organizer engine, StartRequest? input) =>
 {
@@ -151,7 +169,7 @@ app.MapPost("/api/cancel", IResult (Organizer engine) => engine.Cancel()
     ? Results.Ok(new { ok = true }) : Results.BadRequest(new { error = "Não existe sincronização ativa." }));
 app.Run();
 
-public sealed record LoginRequest(string Username, string Password);
+public sealed record LoginRequest(string Username, string Password, bool RememberMe = false);
 public sealed record SetupRequest(string Username, string Password);
 public sealed record StartRequest(bool ForceRefresh = false, string? ProfileId = null);
 public sealed record ProfileRequest(string? ProfileId = null);

@@ -51,8 +51,15 @@ public sealed class SettingsStore
         Id = x.Id, Name = x.Name, Url = x.Url, Username = x.Username,
         PasswordSaved = !string.IsNullOrWhiteSpace(x.Password),
         Live = x.Live, Movies = x.Movies, Series = x.Series,
+        LiveImages = x.LiveImages, LiveNfo = x.LiveNfo, MovieImages = x.MovieImages, MovieNfo = x.MovieNfo, SeriesImages = x.SeriesImages, SeriesNfo = x.SeriesNfo,
         LiveExtension = x.LiveExtension, SeriesConcurrency = x.SeriesConcurrency,
         AutoUpdate = x.AutoUpdate, AutoLive = x.AutoLive, AutoMovies = x.AutoMovies,
+        AutoLiveImages = x.AutoLiveImages ?? x.LiveImages,
+        AutoLiveNfo = x.AutoLiveNfo ?? x.LiveNfo,
+        AutoMovieImages = x.AutoMovieImages ?? x.MovieImages,
+        AutoMovieNfo = x.AutoMovieNfo ?? x.MovieNfo,
+        AutoSeriesImages = x.AutoSeriesImages ?? x.SeriesImages,
+        AutoSeriesNfo = x.AutoSeriesNfo ?? x.SeriesNfo,
         AutoSeries = x.AutoSeries, IntervalHours = x.IntervalHours,
         NextRunUtc = x.NextRunUtc, LastRunUtc = x.LastRunUtc, LegacyRoot = false, FolderName = PathRules.SafeName(x.Name, "Lista"),
         RunTimeLocal = ScheduleClock.EffectiveTime(x), NextRunServer = ScheduleClock.Display(x.NextRunUtc),
@@ -74,6 +81,12 @@ public sealed class SettingsStore
         {
             var profiles = ReadAllUnsafe();
             var old = profiles.FirstOrDefault(x => x.Id == input.Id);
+            input.AutoLiveImages ??= old?.AutoLiveImages;
+            input.AutoLiveNfo ??= old?.AutoLiveNfo;
+            input.AutoMovieImages ??= old?.AutoMovieImages;
+            input.AutoMovieNfo ??= old?.AutoMovieNfo;
+            input.AutoSeriesImages ??= old?.AutoSeriesImages;
+            input.AutoSeriesNfo ??= old?.AutoSeriesNfo;
             if (string.IsNullOrWhiteSpace(input.Password)) input.Password = old?.Password ?? "";
             input.Url = XtreamClient.FixBaseUrl(input.Url);
             input.Username = (input.Username ?? "").Trim();
@@ -147,6 +160,9 @@ public sealed class Organizer
     private readonly string _outputBase;
     private readonly string _configFile;
     private readonly string _activityFile;
+    private readonly WarningLog _warnings;
+    public string WarningLogPath => _warnings.FilePath;
+    private bool _warningLogFailed;
     private readonly object _gate = new();
     private SyncStatus _status = new();
     private readonly List<string> _messages = [];
@@ -159,6 +175,7 @@ public sealed class Organizer
         _http = http;
         _outputBase = Path.GetFullPath(config["OUTPUT_ROOT"] ?? "/media");
         _configFile = Path.GetFullPath(config["CONFIG_FILE"] ?? "/app/data/config.json");
+        _warnings = new WarningLog(_configFile);
         _activityFile = Path.Combine(Path.GetDirectoryName(_configFile)!, "activity.log");
         _writeWorkers = int.TryParse(config["STRM_WRITE_WORKERS"], out var workers) && workers is >= 1 and <= 16 ? workers : 4;
         try
@@ -233,6 +250,12 @@ public sealed class Organizer
                 settings.Live = settings.Live && settings.AutoLive;
                 settings.Movies = settings.Movies && settings.AutoMovies;
                 settings.Series = settings.Series && settings.AutoSeries;
+                settings.LiveImages = settings.AutoLiveImages ?? settings.LiveImages;
+                settings.LiveNfo = settings.AutoLiveNfo ?? settings.LiveNfo;
+                settings.MovieImages = settings.AutoMovieImages ?? settings.MovieImages;
+                settings.MovieNfo = settings.AutoMovieNfo ?? settings.MovieNfo;
+                settings.SeriesImages = settings.AutoSeriesImages ?? settings.SeriesImages;
+                settings.SeriesNfo = settings.AutoSeriesNfo ?? settings.SeriesNfo;
             }
             if (string.IsNullOrWhiteSpace(settings.Url) || string.IsNullOrWhiteSpace(settings.Username)
                 || string.IsNullOrWhiteSpace(settings.Password))
@@ -289,9 +312,13 @@ public sealed class Organizer
             // Modo permanente e não destrutivo: nunca substituímos ou limpamos a biblioteca.
             Directory.CreateDirectory(root);
             Say($"Gravação otimizada: {_writeWorkers} gravadores simultâneos, fila limitada e arquivos .strm existentes preservados.");
-            if (settings.Live) await GenerateFlatAsync(writer, api, root, "TV ao vivo", "get_live_categories", "get_live_streams", "live", settings.LiveExtension, token);
-            if (settings.Movies) await GenerateFlatAsync(writer, api, root, "Filmes", "get_vod_categories", "get_vod_streams", "movie", "mp4", token);
-            if (settings.Series) await GenerateSeriesAsync(writer, api, root, settings, forceRefresh, token);
+            var metadata = new MetadataWriter(_http.CreateClient("artwork"),
+                ex => IncrementError("metadados/capas", ex));
+            if (settings.Live && (settings.LiveImages || settings.LiveNfo))
+                Say("TV: capas/NFOs são auxiliares para biblioteca de vídeos; não criam canais ou EPG no Live TV do Emby.");
+            if (settings.Live) await GenerateFlatAsync(writer, api, root, "TV ao vivo", "get_live_categories", "get_live_streams", "live", settings.LiveExtension, settings, metadata, token);
+            if (settings.Movies) await GenerateFlatAsync(writer, api, root, "Filmes", "get_vod_categories", "get_vod_streams", "movie", "mp4", settings, metadata, token);
+            if (settings.Series) await GenerateSeriesAsync(writer, api, root, settings, metadata, forceRefresh, token);
             SetPhase("Finalizando gravação dos arquivos .strm");
             await writer.CompleteAsync();
             token.ThrowIfCancellationRequested();
@@ -329,8 +356,18 @@ public sealed class Organizer
     private void IncrementError(string context, Exception ex)
     {
         Update(s => s.Errors++);
-        // Evitar registrar urls de requisição (que carregam usuário/senha).
-        Say($"Aviso em {context}: {ex.GetType().Name}");
+        var message = WarningText.Format(context, ex);
+        Say(message);
+        if (!_warnings.Append(message))
+        {
+            lock (_gate)
+            {
+                if (!_warningLogFailed)
+                    Say("Aviso: não foi possível salvar log_avisos.txt. Confira as permissões e o espaço livre da pasta config. Os avisos continuam aparecendo na tela.");
+                _warningLogFailed = true;
+            }
+        }
+        else { lock (_gate) _warningLogFailed = false; }
     }
 
     private static async Task<Dictionary<string, string>> Categories(XtreamClient api, string action, CancellationToken token)
@@ -360,7 +397,7 @@ public sealed class Organizer
     }
 
     private async Task GenerateFlatAsync(StrmWriteQueue writer, XtreamClient api, string root, string section, string categoriesAction,
-        string streamsAction, string kind, string defaultExtension, CancellationToken token)
+        string streamsAction, string kind, string defaultExtension, ConnectionSettings settings, MetadataWriter metadata, CancellationToken token)
     {
         SetPhase("Lendo " + section);
         Say("Consultando categorias e itens de " + section + "...");
@@ -371,12 +408,36 @@ public sealed class Organizer
         {
             token.ThrowIfCancellationRequested();
             var id = JsonUtil.String(item, "stream_id");
-            if (!IsValidId(id)) { Update(s => s.Errors++); continue; }
+            if (!IsValidId(id))
+            {
+                IncrementError("STRM", new MediaWarningException("o STRM " + WarningText.Item(kind == "live" ? "canal" : "filme", JsonUtil.String(item, "name", "Sem nome")),
+                    "não foi criado", new MediaInputException("O provedor não informou um identificador válido para este item.")));
+                continue;
+            }
             var name = PathRules.SafeName(JsonUtil.String(item, "name"), kind == "live" ? "Canal" : "Filme");
             var extension = kind == "movie" ? JsonUtil.String(item, "container_extension", defaultExtension) : defaultExtension;
             var url = api.StreamUrl(kind, id, extension);
+            var images = kind == "live" ? settings.LiveImages : settings.MovieImages;
+            var nfo = kind == "live" ? settings.LiveNfo : settings.MovieNfo;
+            JsonElement details = default;
+            var detailsLoaded = false;
             foreach (var folder in Folders(root, section, item, categories))
-                await writer.EnqueueAsync(folder, name, id, url, token);
+            {
+                var path = await writer.EnqueueAsync(folder, name, id, url, token, WarningText.Item(kind == "live" ? "canal" : "filme", JsonUtil.String(item, "name", name)));
+                if (!images && !nfo) continue;
+                if (kind == "movie" && !detailsLoaded && metadata.NeedsFlat(path, images, nfo))
+                {
+                    detailsLoaded = true;
+                    try
+                    {
+                        using var info = await api.RequestAsync("get_vod_info", token, "vod_id", id);
+                        details = info.RootElement.Clone();
+                    }
+                    catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+                    catch (Exception ex) { IncrementError("a consulta dos dados " + WarningText.Item("filme", JsonUtil.String(item, "name", name)) + " (o NFO poderá conter apenas os dados básicos disponíveis)", ex); }
+                }
+                await metadata.FlatAsync(path, item, details, images, nfo, token, kind == "live" ? "canal" : "filme");
+            }
             if (kind == "live") Update(s => s.Channels++);
             else Update(s => s.Movies++);
         }
@@ -384,7 +445,7 @@ public sealed class Organizer
     }
 
     private async Task GenerateSeriesAsync(StrmWriteQueue writer, XtreamClient api, string root,
-        ConnectionSettings settings, bool forceRefresh, CancellationToken token)
+        ConnectionSettings settings, MetadataWriter metadata, bool forceRefresh, CancellationToken token)
     {
         SetPhase("Lendo catálogo de séries");
         var cats = await Categories(api, "get_series_categories", token);
@@ -408,9 +469,12 @@ public sealed class Organizer
                     var sourceTag = JsonUtil.String(item, "last_modified");
                     var old = cache.Read(id);
                     JsonElement seasons;
-                    if (!forceRefresh && old is not null && SeriesCache.IsFresh(old, sourceTag, DateTimeOffset.UtcNow))
+                    JsonElement seriesDetails = default;
+                    if (!forceRefresh && old is not null && SeriesCache.IsFresh(old, sourceTag, DateTimeOffset.UtcNow)
+                        && (!(settings.SeriesImages || settings.SeriesNfo) || old.Details.HasValue))
                     {
                         seasons = old.Episodes;
+                        seriesDetails = old.Details ?? default;
                         Update(s => s.SeriesCached++);
                     }
                     else
@@ -421,17 +485,19 @@ public sealed class Organizer
                             if (!details.RootElement.TryGetProperty("episodes", out var e) || e.ValueKind != JsonValueKind.Object)
                                 throw new InvalidOperationException("Temporadas não disponíveis na API.");
                             seasons = e.Clone();
+                            seriesDetails = details.RootElement.Clone();
                             Update(s => s.SeriesFetched++);
-                            try { cache.Save(id, sourceTag, seasons); }
+                            try { cache.Save(id, sourceTag, seasons, seriesDetails); }
                             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                            { IncrementError("gravando cache", ex); }
+                            { IncrementError("a gravação do cache da série \"" + WarningText.Name(JsonUtil.String(item, "name")) + "\"", ex); }
                         }
                         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
                         catch (Exception ex) when (old is not null)
                         {
                             // Um servidor temporariamente indisponível não apaga os episódios do cache anterior.
-                            IncrementError("série " + id + " (usando cache anterior)", ex);
+                            IncrementError("a atualização dos dados da série \"" + WarningText.Name(JsonUtil.String(item, "name")) + "\" (os dados anteriores serão usados)", ex);
                             seasons = old.Episodes;
+                            seriesDetails = old.Details ?? default;
                             Update(s => s.SeriesCached++);
                         }
                     }
@@ -444,6 +510,7 @@ public sealed class Organizer
                         var proposed = Path.Combine(baseFolder, name);
                         var owner = seriesPaths.GetOrAdd(proposed, id);
                         var seriesFolder = owner == id ? proposed : Path.Combine(baseFolder, name + " [" + id + "]");
+                        await metadata.SeriesAsync(seriesFolder, item, seriesDetails, settings.SeriesImages, settings.SeriesNfo, ct);
                         foreach (var season in seasons.EnumerateObject())
                         {
                             ct.ThrowIfCancellationRequested();
@@ -451,6 +518,7 @@ public sealed class Organizer
                             var seasonNumber = int.TryParse(season.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
                                 ? Math.Max(0, parsed) : 0;
                             var folder = Path.Combine(seriesFolder, $"Temporada {seasonNumber:00}");
+                            await metadata.SeasonAsync(folder, seasonNumber, seriesDetails, settings.SeriesImages, settings.SeriesNfo, ct, JsonUtil.String(item, "name", name));
                             var episodeWidth = Math.Max(2, season.Value.EnumerateArray().Select(e =>
                                 int.TryParse(JsonUtil.String(e, "episode_num"), out var n) ? n : 0)
                                 .DefaultIfEmpty(0).Max().ToString(CultureInfo.InvariantCulture).Length);
@@ -460,12 +528,16 @@ public sealed class Organizer
                                 ct.ThrowIfCancellationRequested();
                                 idx++;
                                 var epId = JsonUtil.String(episode, "id", JsonUtil.String(episode, "stream_id"));
-                                if (!IsValidId(epId)) throw new InvalidOperationException("ID de episódio inválido.");
+                                if (!IsValidId(epId)) throw new MediaWarningException(
+                                    "o STRM " + WarningText.Episode(JsonUtil.String(item, "name"), JsonUtil.String(episode, "title"), seasonNumber,
+                                        int.TryParse(JsonUtil.String(episode, "episode_num"), out var invalidNumber) ? invalidNumber : idx),
+                                    "não foi criado", new MediaInputException("O provedor não informou um identificador válido para este episódio."));
                                 var number = int.TryParse(JsonUtil.String(episode, "episode_num"), out var n) ? n : idx;
                                 var title = PathRules.SafeName(JsonUtil.String(episode, "title"), "Episodio");
                                 var filename = $"S{seasonNumber:00}E{number.ToString("D" + episodeWidth, CultureInfo.InvariantCulture)} - {title}";
                                 var ext = JsonUtil.String(episode, "container_extension", "mp4");
-                                await writer.EnqueueAsync(folder, filename, epId, api.StreamUrl("series", epId, ext), ct);
+                                var episodePath = await writer.EnqueueAsync(folder, filename, epId, api.StreamUrl("series", epId, ext), ct, WarningText.Episode(JsonUtil.String(item, "name", name), JsonUtil.String(episode, "title", title), seasonNumber, number));
+                                await metadata.EpisodeAsync(episodePath, episode, JsonUtil.String(item, "name"), seasonNumber, number, settings.SeriesImages, settings.SeriesNfo, ct);
                                 if (baseFolder == paths[0]) Update(s => s.Episodes++);
                             }
                         }
@@ -475,7 +547,7 @@ public sealed class Organizer
                 catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
                 catch (Exception ex)
                 {
-                    IncrementError("série " + id, ex);
+                    IncrementError("a organização da série \"" + WarningText.Name(JsonUtil.String(item, "name")) + "\"; alguns STRMs/NFOs podem não ter sido criados", ex);
                     // Interrompe a consulta desta execução sem remover nenhum .strm já existente ou criado.
                     throw new InvalidOperationException($"Não foi possível organizar a série {id}; os arquivos .strm existentes permanecem salvos.", ex);
                 }

@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace XtreamStrmOrganizer;
 
-// O cache só guarda as informações dos episódios. Credenciais não são gravadas no nome dos arquivos.
+// O cache guarda episódios e detalhes de série/temporadas. Credenciais não são gravadas no nome dos arquivos.
 public sealed class SeriesCache
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
@@ -41,7 +41,7 @@ public sealed class SeriesCache
                now - entry.FetchedAt < TimeSpan.FromHours(24);
     }
 
-    public void Save(string id, string tag, JsonElement episodes)
+    public void Save(string id, string tag, JsonElement episodes, JsonElement? details = null)
     {
         Directory.CreateDirectory(_directory);
         var entry = new CachedSeries
@@ -49,7 +49,8 @@ public sealed class SeriesCache
             SeriesId = id,
             SourceTag = tag,
             FetchedAt = DateTimeOffset.UtcNow,
-            Episodes = episodes.Clone()
+            Episodes = episodes.Clone(),
+            Details = details?.Clone()
         };
         var file = Filename(id);
         var tmp = file + "." + Guid.NewGuid().ToString("N") + ".tmp";
@@ -74,5 +75,6 @@ public sealed class CachedSeries
     public string SeriesId { get; set; } = "";
     public string SourceTag { get; set; } = "";
     public DateTimeOffset FetchedAt { get; set; }
+    public JsonElement? Details { get; set; }
     public JsonElement Episodes { get; set; }
 }

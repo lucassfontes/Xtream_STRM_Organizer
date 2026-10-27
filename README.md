@@ -1,3 +1,19 @@
+# Versão 1.8.2
+
+Avisos claros por filme, canal, série, temporada e episódio. Histórico persistente em config/log_avisos.txt e botão para baixar pelo painel. Veja [alterações e validação](ATUALIZACAO-1.8.2.md).
+
+# Pacote 1.8.1 corrigido
+
+Inclui o .env.example exigido na primeira instalação. iniciar-linux.sh mantém a janela interativa aberta até pressionar Enter e grava a saída completa do Docker em logs/. Veja [a correção do instalador](CORRECAO-INSTALADOR.md).
+
+# Atualização 1.8.1
+
+Agendamento com seis opções próprias de capas/NFOs, interface otimizada para celular e login lembrado. Veja [instruções da versão atual](ATUALIZACAO-1.8.1.md) e [validação atual](VALIDACAO-1.8.1.md).
+
+# Atualização 1.8.0
+
+Capas e NFOs opcionais para Emby. Veja [instruções de atualização](ATUALIZACAO-1.8.0.md) e [validação](VALIDACAO-1.8.0.md). As instruções abaixo foram preservadas como referência das funcionalidades anteriores.
+
 ## Documentação das funcionalidades e testes locais
 
 # Xtream STRM Organizer v1.7.3 — Instalação via GitHub e ZimaOS

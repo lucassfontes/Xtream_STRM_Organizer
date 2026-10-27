@@ -1,0 +1,81 @@
+/* Keep the existing palette/layout; improve touch targets, wrapping and phone sizing. */
+button, a, input, select { -webkit-tap-highlight-color: transparent; }
+button, a, label.check { touch-action: manipulation; }
+button:focus-visible, a:focus-visible { outline: 2px solid #45ddb5; outline-offset: 3px; }
+.field, .card-title, .card-title > div, .schedule-highlight > div { min-width: 0; }
+.card-title .round-icon { flex-shrink: 0; }
+.metadata-row { margin: 0; padding: 14px; border: 1px solid #2b3d50; border-radius: 12px; min-width: 0; }
+.metadata-row legend { padding: 0 7px; font-size: 13px; font-weight: 700; color: #c3d0de; }
+.metadata-row .checks { margin-bottom: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.scheduled-metadata { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.label-row, .phase-head, .progress { flex-wrap: wrap; }
+.caption, .hint, .notice, .schedule-list-item, .schedule-highlight { overflow-wrap: anywhere; }
+#configForm > .hint { margin-bottom: 18px; }
+.notice:empty { min-height: 0; margin-top: 0; }
+.remember { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; margin: 0; font-size: 14px; }
+.remember input { width: 20px; height: 20px; flex-shrink: 0; accent-color: #45ddb5; padding: 0; }
+.login-hint { font-size: 12px; margin: 6px 0 18px; }
+@media (max-width: 1120px) {
+  .scheduled-metadata { grid-template-columns: 1fr; }
+}
+@media (max-width: 800px) {
+  html { scroll-padding-top: 126px; -webkit-text-size-adjust: 100%; }
+  body { min-width: 0; }
+  .layout { display: block; }
+  .sidebar { width: 100%; height: auto; position: sticky; top: 0; z-index: 10; padding: 12px 12px 8px; gap: 10px; box-shadow: 0 4px 18px #0003; border-right: 0; border-bottom: 1px solid #263243; }
+  .sidebar .brand { padding: 0 4px; }
+  .sidebar .mark, .sidebar .mark img { width: 32px; height: 32px; }
+  .nav { width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+  .nav a { min-height: 44px; flex-shrink: 0; }
+  .content { padding: 0 16px calc(28px + env(safe-area-inset-bottom, 0px)); }
+  .topbar { height: auto; min-height: 64px; gap: 8px; flex-wrap: wrap; padding: 10px 0; }
+  .right { min-width: 0; }
+  .crumb { font-size: 12px; }
+  .exit, .btn { min-height: 44px; }
+  .hero { padding: 24px 0 20px; }
+  .hero h1 { font-size: 28px; line-height: 1.2; }
+  .card { padding: 18px; border-radius: 16px; }
+  .card-head { margin-bottom: 18px; }
+  .card-head .chip { display: none; }
+  .control { font-size: 16px; min-height: 48px; }
+  .check { min-height: 48px; font-size: 13px; }
+  .check input, .refresh-control input { width: 20px; height: 20px; flex-shrink: 0; }
+  .actions { gap: 10px; }
+  .actions .btn { flex: 1 1 140px; }
+  .phase { max-width: 100%; }
+  .progress-details > div { align-items: flex-start; flex-direction: column; }
+  .progress-details strong { font-size: 20px; }
+  .log { max-height: 210px; -webkit-overflow-scrolling: touch; }
+  .schedule-highlight { padding: 16px; gap: 10px; }
+  .schedule-icon { width: 34px; height: 34px; font-size: 20px; }
+  .schedule-highlight strong { font-size: 19px; }
+  .tree { font-size: 11px; padding: 12px; }
+  .header { height: 76px; padding: 16px 20px; }
+  main:not(.content) { min-height: calc(100svh - 120px); padding: 16px 16px 28px; }
+  #loginForm input:not([type="checkbox"]), #form input { font-size: 16px; min-height: 48px; }
+  .eye { min-height: 44px; min-width: 44px; }
+  .safe { flex-wrap: wrap; text-align: center; }
+}
+@media (max-width: 460px) {
+  .content { padding-left: 12px; padding-right: 12px; }
+  .card { padding: 16px; }
+  .field-grid { grid-template-columns: minmax(0, 1fr); }
+  .checks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .check { padding: 10px; overflow-wrap: anywhere; }
+  .metadata-row { padding: 10px; }
+  .metadata-row .checks { gap: 8px; }
+  .label-row { align-items: flex-start; }
+  .label-row span { flex-basis: 100%; }
+  .metrics .metric { padding: 12px; }
+  .metric-top { font-size: 12px; gap: 5px; }
+  .metric-icon { width: 27px; height: 27px; flex-shrink: 0; }
+  .schedule-list-item { align-items: flex-start; flex-direction: column; }
+  .schedule-list-item span { font-size: 12px; }
+  .schedule-highlight { padding: 12px; }
+  .schedule-icon { display: none; }
+  .foot { line-height: 1.6; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}

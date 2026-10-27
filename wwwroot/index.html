@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="theme-color" content="#0b121c" />
-<link rel="icon" type="image/png" sizes="128x128" href="/icon.png?v=1.7.4" />
+<link rel="icon" type="image/png" sizes="128x128" href="/icon.png?v=1.8.2" />
 <title>Xtream STRM Organizer • Painel</title>
 <style>
 :root{color-scheme:dark;--bg:#0b121c;--card:#141e2b;--card2:#182433;--line:#293647;--input:#0b1522;--text:#ecf2f9;--muted:#97a5b8;--green:#45ddb5;--green2:#b2fbe4;--error:#ff9b9e;--font:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -21,11 +21,12 @@
 @media(max-width:460px){.field-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.badge{display:none}.metrics{gap:9px}.metric b{font-size:23px}.metrics .metric{padding:14px}.checks{display:grid;grid-template-columns:1fr}.actions .btn{flex:1}.hero h1{font-size:28px}}
 .schedule-highlight{display:flex;align-items:flex-start;gap:15px;background:linear-gradient(110deg,#173a34,#0e292e);border:1px solid #31735d;border-radius:15px;padding:20px;margin:18px 0 10px}.schedule-icon{display:grid;place-items:center;width:43px;height:43px;flex-shrink:0;font-size:24px;background:#285749;color:#a2ffdc;border-radius:12px}.schedule-kicker{font-size:10px;letter-spacing:1.5px;font-weight:900;color:#83dfc3;margin-bottom:8px}.schedule-highlight strong{font-size:clamp(18px,2.3vw,24px);color:#f5fff9;line-height:1.3}.schedule-highlight p{margin:7px 0 6px;color:#b2e8d7;font-size:12px}.schedule-zone{font-size:11px;color:#8ca9a5}.schedule-list-head{margin-top:21px;color:#c8dcd7;font-weight:700;font-size:12px}.schedule-list{display:grid;gap:7px;margin-top:10px}.schedule-list-item{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center;border:1px solid #304b47;background:#0f2027;border-radius:9px;padding:10px 13px;color:#cfe5dc;font-size:12px}.schedule-list-item span{color:#98b9ad}
 </style>
+<link rel="stylesheet" href="/responsive.css?v=1.8.2" />
 </head>
 <body>
 <div class="layout">
 <aside class="sidebar">
- <div class="brand"><span class="mark" style="background:transparent;box-shadow:none"><img src="/icon.png?v=1.7.4" alt="" width="41" height="41" /></span><span><strong>XTREAM</strong><small>STRM ORGANIZER</small></span></div>
+ <div class="brand"><span class="mark" style="background:transparent;box-shadow:none"><img src="/icon.png?v=1.8.2" alt="" width="41" height="41" /></span><span><strong>XTREAM</strong><small>STRM ORGANIZER</small></span></div>
  <nav class="nav" aria-label="Menu principal"><span class="nav-title">MENU PRINCIPAL</span>
   <a class="active" href="#painel"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Painel</a>
   <a href="#conexao"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="m7 3 5 4 5-4"/></svg>Conexão Xtream</a>
@@ -34,7 +35,7 @@
   <a href="#estrutura"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h7l2 3h9v11H3z"/></svg>Estrutura de pastas</a>
  </nav>
  <div class="side-bottom"><strong>◆ Sua biblioteca, organizada</strong><p>As categorias são preservadas exatamente como vêm da API, sem filtros de conteúdo.</p></div>
- <div class="version">Versão 1.6.0 • C# / Docker</div>
+ <div class="version">Versão 1.8.2 • C# / Docker</div>
 </aside>
 <main class="content" id="painel">
  <div class="topbar"><div class="crumb">Workspace <span aria-hidden="true"> / </span> <b>Visão geral</b></div><div class="right"><span class="badge"><span class="dot"></span>Painel conectado</span><button class="exit" id="logout" type="button">Sair da conta</button></div></div>
@@ -57,6 +58,11 @@
   </div><div class="separator"></div>
   <div class="label-row">Conteúdo que será organizado <span>Sem filtro de conteúdo</span></div>
   <div class="checks"><label class="check"><input id="live" type="checkbox" checked /> TV ao vivo</label><label class="check"><input id="movies" type="checkbox" checked /> Filmes</label><label class="check"><input id="series" type="checkbox" checked /> Séries</label></div>
+<div class="separator"></div><div class="label-row">Capas e metadados · execução manual <span>Somente arquivos ausentes</span></div>
+<div class="label-row">TV ao vivo</div><div class="checks"><label class="check"><input id="liveImages" type="checkbox" /> Baixar capas</label><label class="check"><input id="liveNfo" type="checkbox" /> Gerar NFOs</label></div>
+<div class="label-row">Filmes</div><div class="checks"><label class="check"><input id="movieImages" type="checkbox" /> Baixar capas</label><label class="check"><input id="movieNfo" type="checkbox" /> Gerar NFOs</label></div>
+<div class="label-row">Séries, temporadas e episódios</div><div class="checks"><label class="check"><input id="seriesImages" type="checkbox" /> Baixar capas</label><label class="check"><input id="seriesNfo" type="checkbox" /> Gerar NFOs</label></div>
+<p class="hint">Estas opções são usadas ao clicar em Atualizar biblioteca. O agendamento tem suas próprias opções abaixo. Imagens e dados dependem do provedor. TV: estes NFOs/capas servem à biblioteca de vídeos; o Live TV do Emby usa M3U/XMLTV.</p>
   <div class="field-grid">
    <div class="field"><label class="main-label" for="liveExtension">Formato do stream de TV</label><select class="control" id="liveExtension"><option value="ts">TS (.ts)</option><option value="m3u8">HLS (.m3u8)</option></select></div>
    <div class="field"><label class="main-label" for="seriesConcurrency">Velocidade de análise de séries</label><select class="control" id="seriesConcurrency"><option value="4">4 simultâneas · Conservador</option><option value="8" selected>8 simultâneas · Equilibrado</option><option value="16">16 simultâneas · Rápido</option></select><p class="hint">Se o servidor limitar requisições, diminua para 4.</p></div>
@@ -77,6 +83,8 @@
    <div class="run-info"><span id="speed">Velocidade: —</span><span id="eta">Tempo restante: —</span><span id="retries">Tentativas repetidas: 0</span></div>
    <label class="refresh-control"><input type="checkbox" id="forceRefresh" /> Consultar todos os episódios novamente <small>(ignora o cache, mas nunca sobrescreve .strm existentes)</small></label>
    <div class="actions"><button id="start" class="btn primary" type="button">▶ &nbsp; Atualizar biblioteca</button><button id="cancel" class="btn danger" type="button" disabled>✕ &nbsp; Cancelar</button></div>
+   <div class="actions"><a class="btn secondary" href="/api/warnings" download="log_avisos.txt">Baixar log de avisos</a></div>
+   <p class="hint">Falhas identificam o item, o arquivo e o motivo. Histórico salvo em config/log_avisos.txt.</p>
    <div class="log-title">Atividade recente · arquivos preservados e ignorados</div><div class="log" id="log" role="log" aria-live="off">As mensagens aparecerão aqui.</div>
    <p class="destination">Gravação paralela otimizada com fila limitada e proteção contra sobrescrita. Arquivos .strm existentes nunca são removidos, substituídos ou modificados.<br>Local no contêiner: <code>/media/[nome da conexão]</code> (biblioteca montada em Biblioteca_IPTV no host)<br>Os arquivos ficam na pasta mapeada no Docker.</p>
   </section>
@@ -89,12 +97,22 @@
   <div class="field"><label class="main-label" for="runTimeLocal">Horário da execução (servidor)</label><input id="runTimeLocal" class="control" type="time" value="03:00" step="60" form="configForm" /><p class="hint">Com 12h, executa neste horário e 12 horas depois. Com 24h, uma vez por dia.</p></div>
   <div class="field"><label class="main-label">Conteúdo a atualizar</label><div class="checks"><label class="check"><input id="autoLive" type="checkbox" checked /> TV</label><label class="check"><input id="autoMovies" type="checkbox" checked /> Filmes</label><label class="check"><input id="autoSeries" type="checkbox" checked /> Séries</label></div></div>
  </div>
+ <div class="separator"></div>
+ <div class="label-row">Capas e NFOs do agendamento</div>
+ <p class="caption">Lista selecionada: <strong id="scheduleProfileName">Nova conexão</strong>. Escolha o que gerar nas atualizações automáticas, independentemente da execução manual.</p>
+ <div class="scheduled-metadata">
+ <fieldset class="metadata-row"><legend>TV ao vivo</legend><div class="checks"><label class="check"><input id="autoLiveImages" type="checkbox" form="configForm" /> Baixar capas</label><label class="check"><input id="autoLiveNfo" type="checkbox" form="configForm" /> Gerar NFOs</label></div></fieldset>
+ <fieldset class="metadata-row"><legend>Filmes</legend><div class="checks"><label class="check"><input id="autoMovieImages" type="checkbox" form="configForm" /> Baixar capas</label><label class="check"><input id="autoMovieNfo" type="checkbox" form="configForm" /> Gerar NFOs</label></div></fieldset>
+ <fieldset class="metadata-row"><legend>Séries, temporadas e episódios</legend><div class="checks"><label class="check"><input id="autoSeriesImages" type="checkbox" form="configForm" /> Baixar capas</label><label class="check"><input id="autoSeriesNfo" type="checkbox" form="configForm" /> Gerar NFOs</label></div></fieldset>
+ </div>
+ <p class="hint">O conteúdo precisa estar habilitado na conexão e em “Conteúdo a atualizar”. Arquivos existentes são preservados. TV ao vivo: NFOs não substituem M3U/XMLTV no Emby.</p>
  <div class="schedule-highlight" aria-live="polite">
    <div class="schedule-icon">◷</div><div><div class="schedule-kicker">PRÓXIMA EXECUÇÃO</div><strong id="nextRunTime">Ainda não agendada</strong><p id="nextRunCountdown">Ative e salve o agendamento para escolher quando atualizar.</p><div class="schedule-zone" id="serverZone">Fuso do servidor: —</div></div>
  </div>
  <p id="nextRun" class="caption">Salve a conexão para programar sua primeira atualização.</p>
  <div class="schedule-list-head">Outras listas programadas</div><div id="allSchedules" class="schedule-list">Nenhuma lista programada.</div>
  <div class="actions"><button class="btn primary" id="saveSchedule" type="button">✓ Salvar agendamento</button></div>
+ <p id="scheduleNotice" class="notice" role="status"></p>
  <p class="caption">Você escolhe quais conteúdos serão atualizados. Os arquivos .strm já existentes nunca serão sobrescritos nem apagados. O serviço verifica a agenda automaticamente a cada 30 segundos.</p>
 </section>
  <div class="bottom-grid" id="estrutura">
@@ -117,7 +135,7 @@
    <div class="separator"></div><p class="caption">Compatível com bibliotecas que suportam arquivos .strm, como Emby, Jellyfin e Kodi, conforme a configuração de cada player.</p>
   </section>
  </div>
- <div class="foot">Xtream STRM Organizer v1.7.2 • Sua biblioteca no seu próprio servidor</div>
+ <div class="foot">Xtream STRM Organizer v1.8.2 • Sua biblioteca no seu próprio servidor</div>
 </main>
 </div>
 <script>
@@ -128,7 +146,7 @@ async function api(path,method='GET',data){
  const result=await response.json().catch(()=>({error:'Resposta inesperada do servidor.'}));
  if(!response.ok)throw Error(result.error || 'Erro de comunicação.');return result;
 }
-function notice(msg,error=false){$('notice').textContent=msg;$('notice').style.color=error?'var(--error)':'var(--green)';}
+function notice(msg,error=false){for(const id of ['notice','scheduleNotice']){$(id).textContent=msg;$(id).style.color=error?'var(--error)':'var(--green)';}}
 let currentProfileId='';
 let knownProfiles=[];
 let selectedNextUtc=null;
@@ -163,7 +181,12 @@ function renderScheduleList(){
  });
 }
 
+const metadataOptions=['liveImages', 'liveNfo', 'movieImages', 'movieNfo', 'seriesImages', 'seriesNfo'];
+const scheduledMetadataOptions=metadataOptions.map(key=>'auto'+key[0].toUpperCase()+key.slice(1));
 function showProfile(x){
+ scheduledMetadataOptions.forEach((key,i)=>$(key).checked=x[key]??!!x[metadataOptions[i]]);
+ $('scheduleProfileName').textContent=x.name||'Nova conexão';
+ metadataOptions.forEach(key=>$(key).checked=!!x[key]);
  currentProfileId=x.id||'';
  $('profileSelect').value=currentProfileId;
  $('profileName').value=x.name||'Minha IPTV';$('url').value=x.url||'';$('username').value=x.username||'';
@@ -191,6 +214,7 @@ $('deleteProfile').onclick=async()=>{
  try{await api('/api/profiles/'+encodeURIComponent(currentProfileId),'DELETE');$('deleteProfile').dataset.confirm='';currentProfileId='';await loadProfiles('');notice('Cadastro removido. Os arquivos .strm foram preservados.');}catch(e){notice(e.message,true);}
 };
 function profileData(){return {
+ ...Object.fromEntries([...metadataOptions,...scheduledMetadataOptions].map(key=>[key,$(key).checked])),
  id:currentProfileId,name:$('profileName').value,url:$('url').value,username:$('username').value,
  password:$('password').value,live:$('live').checked,movies:$('movies').checked,series:$('series').checked,
  liveExtension:$('liveExtension').value,seriesConcurrency:Number($('seriesConcurrency').value),
@@ -199,7 +223,7 @@ function profileData(){return {
 };}
 async function saveProfile(){
  $('save').disabled=true;$('saveSchedule').disabled=true;
- try{const p=await api('/api/settings','POST',profileData());await loadProfiles(p.id);notice('Conexão e agendamento salvos na pasta config do projeto.');}
+ try{const p=await api('/api/settings','POST',profileData());await loadProfiles(p.id);notice('Conexão e agendamento salvos.');}
  catch(e){notice(e.message,true);}
  finally{$('save').disabled=false;$('saveSchedule').disabled=false;}
 }
@@ -224,7 +248,7 @@ async function status(){
   const s=await api('/api/status');
   $('phase').textContent=s.phase;$('channels').textContent=s.channels;$('films').textContent=s.movies;
   $('shows').textContent=s.series;$('episodes').textContent=s.episodes;
-  $('start').disabled=s.running;$('cancel').disabled=!s.running;$('save').disabled=s.running;
+  $('start').disabled=s.running;$('cancel').disabled=!s.running;$('save').disabled=s.running;$('saveSchedule').disabled=s.running;
   $('seriesConcurrency').disabled=s.running;$('forceRefresh').disabled=s.running;
   $('cachedCount').textContent=s.seriesCached||0;$('fetchedCount').textContent=s.seriesFetched||0;
   $('reusedCount').textContent=s.filesReused||0;$('writtenCount').textContent=s.filesWritten||0;
@@ -240,7 +264,8 @@ async function status(){
   $('log').textContent=s.messages.join('\n')||'As mensagens aparecerão aqui.';
  }catch(e){$('phase').textContent='Sem conexão';}
 }
-loadProfiles().catch(e=>notice(e.message,true));status();setInterval(status,1800);setInterval(renderCountdown,1000);
-setInterval(async()=>{try{const savedId=currentProfileId;const data=await api('/api/profiles');knownProfiles=data;const selected=data.find(x=>x.id===savedId);if(selected){renderNext(selected);}renderScheduleList();}catch(e){}},15000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)status();});
+loadProfiles().catch(e=>notice(e.message,true));status();setInterval(()=>{if(!document.hidden)status();},2500);setInterval(()=>{if(!document.hidden)renderCountdown();},1000);
+setInterval(async()=>{if(document.hidden)return;try{const savedId=currentProfileId;const data=await api('/api/profiles');knownProfiles=data;const selected=data.find(x=>x.id===savedId);if(selected){renderNext(selected);}renderScheduleList();}catch(e){}},15000);
 </script>
 </body></html>

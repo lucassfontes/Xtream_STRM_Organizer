@@ -10,7 +10,7 @@ namespace XtreamStrmOrganizer;
 /// </summary>
 internal sealed class StrmWriteQueue : IAsyncDisposable
 {
-    private sealed record Request(string Folder, string Path, string Content);
+    private sealed record Request(string Folder, string Path, string Content, string Target);
     private static readonly UTF8Encoding Utf8NoBom = new(false);
     private readonly Channel<Request> _channel;
     private readonly Task[] _workers;
@@ -41,7 +41,7 @@ internal sealed class StrmWriteQueue : IAsyncDisposable
         _workers = Enumerable.Range(0,concurrency).Select(_ => Task.Run(ConsumeAsync)).ToArray();
     }
 
-    public async ValueTask EnqueueAsync(string folder, string name, string id, string url, CancellationToken token)
+    public async ValueTask<string> EnqueueAsync(string folder, string name, string id, string url, CancellationToken token, string? target = null)
     {
         token.ThrowIfCancellationRequested();
         var path = Path.Combine(folder, name + ".strm");
@@ -54,13 +54,14 @@ internal sealed class StrmWriteQueue : IAsyncDisposable
         _onPendingChange(1);
         try
         {
-            await _channel.Writer.WriteAsync(new Request(folder, path, url + "\n"), token);
+            await _channel.Writer.WriteAsync(new Request(folder, path, url + "\n", target ?? WarningText.Item("item", name)), token);
         }
         catch
         {
             _onPendingChange(-1);
             throw;
         }
+        return path;
     }
 
     private async Task ConsumeAsync()
@@ -74,7 +75,7 @@ internal sealed class StrmWriteQueue : IAsyncDisposable
                     await WriteOneAsync(job, _cancel);
                 }
                 catch (OperationCanceledException) when (_cancel.IsCancellationRequested) { throw; }
-                catch (Exception ex) { _onError(ex); }
+                catch (Exception ex) { _onError(new MediaWarningException("o STRM " + job.Target, "não foi criado", ex)); }
                 finally { _onPendingChange(-1); }
             }
         }

@@ -29,7 +29,7 @@ xtream_preparar_permissoes() {
   umask 077
   if [ ! -f .env ]; then
     if [ ! -f .env.example ]; then
-      xtream_erro 'O arquivo .env.example está ausente. Extraia o ZIP completo e execute dentro da pasta XtreamStrmOrganizer.'
+      xtream_erro 'O arquivo .env.example está ausente. Copie .env.example do ZIP corrigido para a mesma pasta de iniciar-linux.sh (Ctrl+H mostra arquivos ocultos).'
       return 1
     fi
     cp .env.example .env || return 1

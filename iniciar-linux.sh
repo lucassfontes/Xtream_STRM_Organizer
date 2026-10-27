@@ -1,5 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Mantém a janela interativa aberta tanto no sucesso como na falha.
+xtream_finalizar_janela() {
+  local resultado=$?
+  trap - EXIT
+  if [ "$resultado" -ne 0 ]; then
+    printf '\n[Xtream] A inicialização falhou (código %s). A mensagem completa está acima.\n' "$resultado" >&2
+    if [ -n "${xtream_log_file:-}" ]; then
+      printf '[Xtream] Log desta tentativa: %s\n' "$xtream_log_file" >&2
+    fi
+  fi
+  if [ -t 0 ] && [ "${XTREAM_NO_PAUSE:-0}" != 1 ]; then
+    printf '\nA janela ficará aberta. Pressione Enter quando quiser sair... '
+    read -r _xtream_tecla || true
+  fi
+  exit "$resultado"
+}
+trap xtream_finalizar_janela EXIT
 cd "$(dirname "$0")"
 # shellcheck disable=SC1091
 source ./preparar-docker.sh
@@ -12,7 +29,10 @@ if [ "${XTREAM_COMPOSE[0]}" = sudo ]; then
   XTREAM_COMPOSE=(sudo env "PUID=$PUID" "PGID=$PGID" "${XTREAM_COMPOSE[@]:1}")
 fi
 xtream_info 'Iniciando Xtream STRM Organizer...'
-"${XTREAM_COMPOSE[@]}" up -d --build
+mkdir -p logs
+xtream_log_file="$(pwd)/logs/iniciar-$(date +%Y%m%d-%H%M%S)-$$.log"
+# Saída sem interface dinâmica: não corta a mensagem de erro no terminal.
+COMPOSE_PROGRESS=plain "${XTREAM_COMPOSE[@]}" --ansi never up -d --build 2>&1 | tee "$xtream_log_file"
 
 # Mostra o endereço de acesso no terminal toda vez que o programa for iniciado.
 # Não mostramos senhas, tokens ou credenciais Xtream.
