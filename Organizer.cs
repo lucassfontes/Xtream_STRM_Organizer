@@ -306,9 +306,12 @@ public sealed class Organizer
                 count => Update(s => s.FilesPending += count));
             var api = new XtreamClient(_http.CreateClient("xtream"), settings)
             { OnRetry = () => Update(s => s.RequestsRetried++) };
+            SetPhase("Verificando permissão das pastas");
+            LibraryAccess.Verify(root, settings.Live, settings.Movies, settings.Series, token);
             SetPhase("Verificando conexão Xtream");
             await api.VerifyAsync(token);
             Say("Conexão validada.");
+            if (settings.Movies) MovieFolders.Migrate(root, Say, token);
             // Modo permanente e não destrutivo: nunca substituímos ou limpamos a biblioteca.
             Directory.CreateDirectory(root);
             Say($"Gravação otimizada: {_writeWorkers} gravadores simultâneos, fila limitada e arquivos .strm existentes preservados.");
@@ -336,6 +339,7 @@ public sealed class Organizer
         }
         catch (Exception error)
         {
+            IncrementError("preparando ou organizando a biblioteca", error);
             Say("Erro: " + CleanError(error.Message, settings));
             Say("Nenhum arquivo existente foi apagado ou substituído, mesmo com erro.");
             SetPhase("Erro — arquivos preservados");
@@ -385,13 +389,12 @@ public sealed class Organizer
 
     private static IEnumerable<string> Folders(string root, string top, JsonElement item, IReadOnlyDictionary<string, string> categories)
     {
-        // Sem filtros: todas as categorias Xtream são tratadas da mesma maneira.
-        // Mesmo uma categoria chamada XXX ou 18+ fica na sua pasta original.
+        // Não filtra conteúdo. Apenas promove a categoria FILMES ADULTOS.
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var id in JsonUtil.CategoryIds(item))
         {
             var tag = categories.TryGetValue(id, out var result) ? result : "Sem categoria";
-            var folder = Path.Combine(root, top, tag);
+            var folder = MovieFolders.CategoryPath(root, top, tag);
             if (seen.Add(folder)) yield return folder;
         }
     }

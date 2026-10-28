@@ -1,5 +1,19 @@
 services:
+  preparar-pastas:
+    image: busybox:1.36
+    restart: "no"
+    user: "0:0"
+    volumes:
+      - ${MEDIA_PATH:-./Biblioteca_IPTV}:/media
+    entrypoint: ["/bin/sh", "-ec"]
+    command: |
+      find /media -xdev -type d -user root -exec chown ${PUID:-1000}:${PGID:-1000} {} +
+      find /media -xdev -type d -user ${PUID:-1000} -exec chmod u+rwx {} +
+      echo '[Xtream] Pastas antigas preparadas; arquivos preservados.'
   xtream-strm:
+    depends_on:
+      preparar-pastas:
+        condition: service_completed_successfully
     build: .
     container_name: xtream-strm
     restart: unless-stopped

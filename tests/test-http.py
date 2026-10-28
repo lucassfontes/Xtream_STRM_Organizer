@@ -34,7 +34,7 @@ with tempfile.TemporaryDirectory(prefix="xtream-http-") as temp:
         try:
             for attempt in range(100):
                 try:
-                    assert request("/health")["version"] == "1.8.2"
+                    assert request("/health")["version"] == "1.8.4"
                     break
                 except urllib.error.URLError:
                     if process.poll() is not None: raise RuntimeError("Application exited")
@@ -55,7 +55,7 @@ with tempfile.TemporaryDirectory(prefix="xtream-http-") as temp:
             auto_options = ["auto"+key[0].upper()+key[1:] for key in options]
             html = request("/")
             for key in options+auto_options: assert html.count(f'id="{key}"') == 1, key
-            assert "1.8.2" in html
+            assert "1.8.4" in html
             settings = dict(name="Teste",url="http://fixture.invalid",username="user",password="secret",live=True,movies=True,series=True,seriesConcurrency=8,intervalHours=24)
             settings.update(dict.fromkeys(options, True))
             settings.update(dict.fromkeys(auto_options, False))
@@ -96,7 +96,7 @@ with tempfile.TemporaryDirectory(prefix="xtream-http-") as temp:
             request("/api/auth/login", {"username":"testadmin","password":"test-admin-123","rememberMe":False})
             assert next(c for c in jar if c.name == "xtream_strm_session").expires is None
             print("PASS: 30-day persistent cookie, browser reopen, server restart, logout, session-only opt-out.")
-            print("PASS: HTTP startup, health 1.8.2, setup/login/logout, access control, six controls, independent persistence and password preservation.")
+            print("PASS: HTTP startup, health 1.8.4, setup/login/logout, access control, six controls, independent persistence and password preservation.")
         except Exception:
             log.seek(0)
             print(log.read())

@@ -12,7 +12,7 @@ public sealed class MediaWarningException(string subject, string failure, Except
 }
 
 // Only controlled messages are exposed; exception messages can contain signed URLs/passwords.
-public sealed class MediaInputException(string reason) : Exception
+public sealed class MediaInputException(string reason) : Exception(reason)
 {
     public string Reason { get; } = reason;
 }
@@ -42,7 +42,7 @@ public static class WarningText
         HttpRequestException { StatusCode: { } status } => $"O servidor recusou a solicitação (HTTP {(int)status}).",
         HttpRequestException => "Não foi possível completar a conexão com o servidor. Verifique a rede ou tente mais tarde.",
         OperationCanceledException => "O servidor demorou demais para responder (tempo limite excedido).",
-        UnauthorizedAccessException => "O programa não tem permissão para gravar na pasta de destino.",
+        UnauthorizedAccessException => "O programa não tem permissão para gravar na pasta de destino. Reaplique o Compose atualizado para preparar as subpastas antigas; confirme também que o volume permite escrita.",
         PathTooLongException => "O nome ou caminho do arquivo é longo demais para o sistema.",
         IOException => "Não foi possível acessar ou gravar o arquivo. Verifique espaço livre, permissões e disponibilidade do disco.",
         System.Text.Json.JsonException => "O provedor enviou dados em um formato inválido.",

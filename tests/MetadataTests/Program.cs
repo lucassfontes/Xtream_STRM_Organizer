@@ -20,12 +20,92 @@ static class Tests
     static string[] Files(string folder, string pattern) => Directory.GetFiles(folder, pattern, SearchOption.AllDirectories);
     static Dictionary<string, string> Hashes(string folder) => Files(folder, "*").ToDictionary(x => x,
         x => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(x))));
-    public static async Task Main()
+    public static async Task Main(string[] args)
     {
+        if (args.Length == 2 && args[0] == "--probe")
+        {
+            try { LibraryAccess.Verify(args[1], true, true, true, CancellationToken.None); }
+            catch (MediaInputException ex) { Console.Error.WriteLine(ex.Reason); Environment.ExitCode = 2; }
+            return;
+        }
         var root = Path.Combine(Path.GetTempPath(), "xtream-tests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
+            var probeRoot = Path.Combine(root, "probe");
+            var nested = Path.Combine(probeRoot, "Series", "Exemplo", "Temporada 01");
+            Directory.CreateDirectory(nested);
+            File.WriteAllText(Path.Combine(nested, "original.strm"), "preservar");
+            var beforeProbe = Hashes(probeRoot);
+            LibraryAccess.Verify(probeRoot, true, true, true, CancellationToken.None);
+            Check(Hashes(probeRoot).SequenceEqual(beforeProbe), "Preflight preserves files and removes temporary probes");
+            using (var probeCancelled = new CancellationTokenSource())
+            {
+                probeCancelled.Cancel();
+                try { LibraryAccess.Verify(probeRoot, true, true, true, probeCancelled.Token); Check(false, "cancel required"); }
+                catch (OperationCanceledException) { Check(true, "preflight cancelled"); }
+            }
+            var conflict = Path.Combine(root, "file-in-place-of-folder");
+            File.WriteAllText(conflict, "original");
+            try { LibraryAccess.Verify(conflict, true, true, true, CancellationToken.None); Check(false, "invalid folder required"); }
+            catch (MediaInputException ex) { Check(ex.Reason.Contains("pasta") && ex.Reason.Contains("preservados"), "friendly preflight error"); }
+            Check(File.ReadAllText(conflict) == "original", "conflicting file preserved");
+            // Adult movie category is a sibling; migration preserves bytes and refuses conflicts.
+            {
+                var adultRoot = Path.Combine(root, "adult-migration");
+                var oldAdult = Path.Combine(adultRoot, "Filmes", "FILMES ADULTOS");
+                Directory.CreateDirectory(oldAdult);
+                File.WriteAllText(Path.Combine(oldAdult, "Exemplo.strm"), "stream-original");
+                File.WriteAllText(Path.Combine(oldAdult, "Exemplo.nfo"), "nfo-original");
+                File.WriteAllBytes(Path.Combine(oldAdult, "Exemplo-poster.jpg"), [1, 2, 3]);
+                var originalBytes = Directory.GetFiles(oldAdult).ToDictionary(x => Path.GetFileName(x)!, File.ReadAllBytes);
+                MovieFolders.Migrate(adultRoot, _ => { }, CancellationToken.None);
+                var newAdult = Path.Combine(adultRoot, MovieFolders.Adults);
+                Check(!Directory.Exists(oldAdult), "old adult folder removed after move");
+                foreach (var pair in originalBytes)
+                    Check(File.ReadAllBytes(Path.Combine(newAdult, pair.Key!)).SequenceEqual(pair.Value), "moved bytes preserved");
+                MovieFolders.Migrate(adultRoot, _ => { }, CancellationToken.None);
+                Check(Directory.GetFiles(newAdult).Length == 3, "adult migration idempotent");
+                Check(MovieFolders.CategoryPath(adultRoot, "Filmes", " filmes   adultos ") == newAdult, "adult category normalized");
+                Check(MovieFolders.CategoryPath(adultRoot, "TV ao vivo", "FILMES ADULTOS") != newAdult, "TV routing unchanged");
+                Check(MovieFolders.CategoryPath(adultRoot, "Filmes", "FILMES ADULTOS OUTROS") != newAdult, "no broad adult filtering");
+                Directory.CreateDirectory(oldAdult);
+                File.WriteAllText(Path.Combine(oldAdult, "Exemplo.strm"), "conflicting-source");
+                File.WriteAllText(Path.Combine(oldAdult, "Outro.strm"), "must-stay");
+                try { MovieFolders.Migrate(adultRoot, _ => { }, CancellationToken.None); Check(false, "conflict must stop migration"); }
+                catch (MediaInputException ex) { Check(ex.Reason.Contains("Nenhum arquivo foi sobrescrito"), "clear conflict explanation"); }
+                Check(File.ReadAllText(Path.Combine(oldAdult, "Outro.strm")) == "must-stay", "no partial move on detected conflict");
+                Check(File.ReadAllText(Path.Combine(newAdult, "Exemplo.strm")) == "stream-original", "destination conflict preserved");
+                File.Move(Path.Combine(oldAdult, "Exemplo.strm"), Path.Combine(oldAdult, "Renomeado.strm"));
+                MovieFolders.Migrate(adultRoot, _ => { }, CancellationToken.None);
+                Check(!Directory.Exists(oldAdult) && File.Exists(Path.Combine(newAdult, "Outro.strm")), "merge existing destination without overwrite");
+            }
+            foreach (var autoAdult in new[] { false, true })
+            {
+                var adultDir = Path.Combine(root, "adult-run-" + autoAdult);
+                var adultConfig = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> {
+                    ["CONFIG_FILE"] = Path.Combine(adultDir, "config/config.json"), ["OUTPUT_ROOT"] = Path.Combine(adultDir, "media")
+                }).Build();
+                var adultStore = new SettingsStore(adultConfig);
+                var adultProfile = adultStore.Save(new ConnectionSettings {
+                    Name = "Teste", Url = "http://fixture", Username = "user", Password = "secret",
+                    Live = false, Series = false, Movies = true, MovieImages = true, MovieNfo = true,
+                    AutoMovies = true, AutoLive = false, AutoSeries = false, AutoMovieImages = true, AutoMovieNfo = true
+                });
+                var adultFixture = new Fixture { AdultCategory = true };
+                var adultOrganizer = new Organizer(adultStore, adultFixture, adultConfig);
+                await Run(adultOrganizer, adultProfile.Id, automatic: autoAdult);
+                var adultOutput = Path.Combine(adultDir, "media", "Teste");
+                var adultDestination = Path.Combine(adultOutput, MovieFolders.Adults);
+                Check(Files(adultDestination, "*.strm").Length == 2, "adult STRMs beside Filmes, manual and scheduled");
+                Check(Files(adultDestination, "*.nfo").Length == 2 && Files(adultDestination, "*.png").Length == 2, "adult sidecars follow movie options");
+                Check(!Directory.Exists(Path.Combine(adultOutput, "Filmes", MovieFolders.Adults)), "old location not recreated");
+                var adultHashes = Hashes(adultDestination);
+                var adultRequests = adultFixture.ImageRequests;
+                await Run(adultOrganizer, adultProfile.Id, automatic: autoAdult);
+                Check(Hashes(adultDestination).OrderBy(x => x.Key).SequenceEqual(adultHashes.OrderBy(x => x.Key)), "adult files not overwritten");
+                Check(adultFixture.ImageRequests == adultRequests, "adult artwork not downloaded twice");
+            }
             // Full integration matrix: settings persistence -> Organizer -> fake Xtream -> real filesystem.
             for (var mask = 0; mask < 64; mask++)
             {
@@ -278,6 +358,7 @@ sealed class Fixture : HttpMessageHandler, IHttpClientFactory
     public int VodRequests;
     public bool BadImage;
     public bool InvalidLiveId;
+    public bool AdultCategory;
     public HttpClient CreateClient(string name) => new(this, false);
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
     {
@@ -313,6 +394,7 @@ sealed class Fixture : HttpMessageHandler, IHttpClientFactory
             """,
             _ => throw new Exception("Unexpected action: " + action)
         };
+        if (AdultCategory && action == "get_vod_categories") json = json.Replace("Geral", "FILMES ADULTOS");
         if (InvalidLiveId && action == "get_live_streams") json = json.Replace("\"stream_id\":101", "\"stream_id\":\"invalid\"");
         return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") });
     }

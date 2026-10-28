@@ -1,2 +1,2 @@
-Xtream STRM Organizer v1.8.2 — avisos por item para capas, miniaturas, STRMs e NFOs; histórico log_avisos.txt
+Xtream STRM Organizer v1.8.4 — avisos por item para capas, miniaturas, STRMs e NFOs; histórico log_avisos.txt
 Inclui as funcionalidades e correções da 1.8.1.

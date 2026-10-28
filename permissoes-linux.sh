@@ -99,12 +99,17 @@ xtream_preparar_permissoes() {
     if [ "$created_media" -eq 1 ] && [ "$(id -u)" -eq 0 ]; then
       chown "$PUID:$PGID" "$media_dir" || return 1
     fi
+    # Migração da raiz antiga; as subpastas são tratadas pelo serviço preparar-pastas.
+    if [ "$(stat -c %u "$media_dir")" -eq 0 ]; then
+      xtream_root chown "$PUID:$PGID" "$media_dir" || return 1
+      xtream_root chmod u+rwx "$media_dir" || return 1
+    fi
     # Se o script for iniciado como root, -w seria sempre verdadeiro.
     if [ ! -w "$media_dir" ] || [ "$(stat -c %u "$media_dir")" != "$PUID" ]; then
       xtream_erro "MEDIA_PATH '$media_dir' precisa pertencer e permitir gravação ao UID=$PUID."
       return 1
     fi
-    xtream_info "Pasta externa detectada: $media_dir. Arquivos antigos não terão propriedade alterada automaticamente."
+    xtream_info "Pasta externa detectada: $media_dir. O Compose corrigirá apenas pastas antigas do root; arquivos de mídia serão preservados."
   fi
   # Evita bloquear acesso a pastas previamente criadas com permissão 700
   # quando a aplicação é executada pelo usuário correto.

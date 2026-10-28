@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="theme-color" content="#0b121c" />
-<link rel="icon" type="image/png" sizes="128x128" href="/icon.png?v=1.8.2" />
+<link rel="icon" type="image/png" sizes="128x128" href="/icon.png?v=1.8.4" />
 <title>Xtream STRM Organizer • Painel</title>
 <style>
 :root{color-scheme:dark;--bg:#0b121c;--card:#141e2b;--card2:#182433;--line:#293647;--input:#0b1522;--text:#ecf2f9;--muted:#97a5b8;--green:#45ddb5;--green2:#b2fbe4;--error:#ff9b9e;--font:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -21,12 +21,12 @@
 @media(max-width:460px){.field-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.badge{display:none}.metrics{gap:9px}.metric b{font-size:23px}.metrics .metric{padding:14px}.checks{display:grid;grid-template-columns:1fr}.actions .btn{flex:1}.hero h1{font-size:28px}}
 .schedule-highlight{display:flex;align-items:flex-start;gap:15px;background:linear-gradient(110deg,#173a34,#0e292e);border:1px solid #31735d;border-radius:15px;padding:20px;margin:18px 0 10px}.schedule-icon{display:grid;place-items:center;width:43px;height:43px;flex-shrink:0;font-size:24px;background:#285749;color:#a2ffdc;border-radius:12px}.schedule-kicker{font-size:10px;letter-spacing:1.5px;font-weight:900;color:#83dfc3;margin-bottom:8px}.schedule-highlight strong{font-size:clamp(18px,2.3vw,24px);color:#f5fff9;line-height:1.3}.schedule-highlight p{margin:7px 0 6px;color:#b2e8d7;font-size:12px}.schedule-zone{font-size:11px;color:#8ca9a5}.schedule-list-head{margin-top:21px;color:#c8dcd7;font-weight:700;font-size:12px}.schedule-list{display:grid;gap:7px;margin-top:10px}.schedule-list-item{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center;border:1px solid #304b47;background:#0f2027;border-radius:9px;padding:10px 13px;color:#cfe5dc;font-size:12px}.schedule-list-item span{color:#98b9ad}
 </style>
-<link rel="stylesheet" href="/responsive.css?v=1.8.2" />
+<link rel="stylesheet" href="/responsive.css?v=1.8.4" />
 </head>
 <body>
 <div class="layout">
 <aside class="sidebar">
- <div class="brand"><span class="mark" style="background:transparent;box-shadow:none"><img src="/icon.png?v=1.8.2" alt="" width="41" height="41" /></span><span><strong>XTREAM</strong><small>STRM ORGANIZER</small></span></div>
+ <div class="brand"><span class="mark" style="background:transparent;box-shadow:none"><img src="/icon.png?v=1.8.4" alt="" width="41" height="41" /></span><span><strong>XTREAM</strong><small>STRM ORGANIZER</small></span></div>
  <nav class="nav" aria-label="Menu principal"><span class="nav-title">MENU PRINCIPAL</span>
   <a class="active" href="#painel"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Painel</a>
   <a href="#conexao"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="m7 3 5 4 5-4"/></svg>Conexão Xtream</a>
@@ -35,7 +35,7 @@
   <a href="#estrutura"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h7l2 3h9v11H3z"/></svg>Estrutura de pastas</a>
  </nav>
  <div class="side-bottom"><strong>◆ Sua biblioteca, organizada</strong><p>As categorias são preservadas exatamente como vêm da API, sem filtros de conteúdo.</p></div>
- <div class="version">Versão 1.8.2 • C# / Docker</div>
+ <div class="version">Versão 1.8.4 • C# / Docker</div>
 </aside>
 <main class="content" id="painel">
  <div class="topbar"><div class="crumb">Workspace <span aria-hidden="true"> / </span> <b>Visão geral</b></div><div class="right"><span class="badge"><span class="dot"></span>Painel conectado</span><button class="exit" id="logout" type="button">Sair da conta</button></div></div>
@@ -121,13 +121,15 @@
   ├── TV ao vivo/
 │   ├── BRASIL/Canal de exemplo.strm
 │   └── XXX/Outro canal.strm
+  ├── FILMES ADULTOS/
+  │   └── Filme.strm
   ├── Filmes/
 │   ├── Ação/Nome do filme.strm
 │   └── 18+/Outro filme.strm
   └── Series/
     └── Drama/Nome da série/
         ├── Temporada 01/S01E01 - Episódio.strm
-        └── Temporada 02/S02E01 - Episódio.strm</pre><p class="caption">São exemplos. Nenhuma categoria é excluída, renomeada por critério de conteúdo ou enviada a uma pasta especial.</p></section>
+        └── Temporada 02/S02E01 - Episódio.strm</pre><p class="caption">São exemplos. A categoria FILMES ADULTOS fica ao lado de Filmes, Series e TV ao vivo. Usa as opções de filmes, inclusive no agendamento. Nenhum conteúdo é excluído.</p></section>
   <section class="card"><header class="card-head"><div class="card-title"><span class="round-icon">ⓘ</span><div><h2>Como funciona</h2><p>Biblioteca pronta para seus players</p></div></div></header>
    <div class="info-row"><span class="round-icon">1</span><div><strong>Conecte à API</strong><p>Preencha a URL, o usuário e a senha Xtream fornecidos pelo seu provedor.</p></div></div>
    <div class="info-row"><span class="round-icon">2</span><div><strong>Organize as tags</strong><p>O sistema usa as categorias originais, incluindo todas as categorias sem filtros.</p></div></div>
@@ -135,7 +137,7 @@
    <div class="separator"></div><p class="caption">Compatível com bibliotecas que suportam arquivos .strm, como Emby, Jellyfin e Kodi, conforme a configuração de cada player.</p>
   </section>
  </div>
- <div class="foot">Xtream STRM Organizer v1.8.2 • Sua biblioteca no seu próprio servidor</div>
+ <div class="foot">Xtream STRM Organizer v1.8.4 • Sua biblioteca no seu próprio servidor</div>
 </main>
 </div>
 <script>

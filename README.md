@@ -1,3 +1,11 @@
+## Versão 1.8.4 — FILMES ADULTOS fora de Filmes
+
+A categoria `FILMES ADULTOS` agora fica ao lado de `Filmes`, `Series` e `TV ao vivo`. Veja [ATUALIZACAO-1.8.4.md](ATUALIZACAO-1.8.4.md) para a migração automática e cuidados com conflitos.
+
+## Versão 1.8.3 — permissões das subpastas
+
+Veja [ATUALIZACAO-1.8.3.md](ATUALIZACAO-1.8.3.md). Para a biblioteca em `/media/ZimaOS-HD/AppData/XtreamStrmOrganizer/Biblioteca_IPTV`, use `docker-compose.zimaos-hd.yml`. Preserve os caminhos da instalação existente.
+
 # Versão 1.8.2
 
 Avisos claros por filme, canal, série, temporada e episódio. Histórico persistente em config/log_avisos.txt e botão para baixar pelo painel. Veja [alterações e validação](ATUALIZACAO-1.8.2.md).
