@@ -14,7 +14,19 @@ static class Tests
     {
         Check(organizer.Start(force, id, automatic), "Start");
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-        while (organizer.Snapshot().Running) await Task.Delay(5, timeout.Token);
+        var previousPercent = 0;
+        while (organizer.Snapshot().Running)
+        {
+            var progress = organizer.Snapshot();
+            Check(progress.ProgressPercent >= previousPercent, "progress never regresses within a run");
+            Check(progress.Completed || progress.ProgressPercent < 100, "100 only after completion");
+            Check(progress.ItemsProcessed <= progress.ItemsTotal, "processed count bounded by fixed catalog total");
+            previousPercent = progress.ProgressPercent;
+            await Task.Delay(5, timeout.Token);
+        }
+        var finished = organizer.Snapshot();
+        Check(finished.Completed && finished.ProgressPercent == 100 && finished.FilesPending == 0, "100 only after queue drained");
+        Check(finished.ItemsProcessed == finished.ItemsTotal, "all selected catalog items processed");
         Check(organizer.Snapshot().Phase == "Concluído", string.Join("\n", organizer.Snapshot().Messages));
     }
     static string[] Files(string folder, string pattern) => Directory.GetFiles(folder, pattern, SearchOption.AllDirectories);
@@ -32,6 +44,11 @@ static class Tests
         Directory.CreateDirectory(root);
         try
         {
+            Check(new SyncStatus { Running = true }.ProgressIndeterminate, "unknown catalog uses indeterminate progress");
+            Check(new SyncStatus { Running = true, CatalogReady = true, ItemsTotal = 10, ItemsProcessed = 5 }.ProgressPercent == 50, "actual catalog ratio");
+            Check(new SyncStatus { Running = true, CatalogReady = true, ItemsTotal = 10, ItemsProcessed = 10, FilesPending = 1 }.ProgressPercent == 99, "pending writer cannot show 100");
+            Check(new SyncStatus { CatalogReady = true, ItemsTotal = 10, ItemsProcessed = 10 }.ProgressPercent == 99, "cancelled/error never claims completed");
+            Check(new SyncStatus { CatalogReady = true, Completed = true }.ProgressPercent == 100, "empty catalog completes");
             var probeRoot = Path.Combine(root, "probe");
             var nested = Path.Combine(probeRoot, "Series", "Exemplo", "Temporada 01");
             Directory.CreateDirectory(nested);
@@ -105,6 +122,37 @@ static class Tests
                 await Run(adultOrganizer, adultProfile.Id, automatic: autoAdult);
                 Check(Hashes(adultDestination).OrderBy(x => x.Key).SequenceEqual(adultHashes.OrderBy(x => x.Key)), "adult files not overwritten");
                 Check(adultFixture.ImageRequests == adultRequests, "adult artwork not downloaded twice");
+            }
+            foreach (var gateAction in new[] { "get_live_streams", "/image", "empty" })
+            {
+                var progressDir = Path.Combine(root, "progress-" + gateAction.Replace("/", ""));
+                var progressConfig = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> {
+                    ["CONFIG_FILE"] = Path.Combine(progressDir, "config/config.json"), ["OUTPUT_ROOT"] = Path.Combine(progressDir, "media")
+                }).Build();
+                var progressStore = new SettingsStore(progressConfig);
+                var progressProfile = progressStore.Save(new ConnectionSettings {
+                    Name = "Teste", Url = "http://fixture", Username = "user", Password = "secret",
+                    Live = true, Movies = false, Series = false, LiveImages = true
+                });
+                var progressFixture = new Fixture { GateAction = gateAction, EmptyCatalog = gateAction == "empty" };
+                var progressOrganizer = new Organizer(progressStore, progressFixture, progressConfig);
+                if (gateAction == "empty") { await Run(progressOrganizer, progressProfile.Id); continue; }
+                Check(progressOrganizer.Start(false, progressProfile.Id), "progress gated start");
+                await progressFixture.GateEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                var during = progressOrganizer.Snapshot();
+                Check(during.Running && !during.Completed && during.ProgressPercent == 0, "no fabricated progress while waiting");
+                Check(during.ProgressIndeterminate == (gateAction == "get_live_streams"), "indeterminate only before catalog known");
+                if (gateAction == "/image")
+                {
+                    Check(during.ItemsTotal == 1 && during.ItemsProcessed == 0, "image must finish before item counted");
+                    progressOrganizer.Cancel();
+                }
+                progressFixture.Gate.TrySetResult();
+                using var progressTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                while (progressOrganizer.Snapshot().Running) await Task.Delay(5, progressTimeout.Token);
+                var after = progressOrganizer.Snapshot();
+                Check(gateAction == "/image" ? !after.Completed && after.ProgressPercent < 100 : after.Completed && after.ProgressPercent == 100,
+                    "cancel does not show 100; success does");
             }
             // Full integration matrix: settings persistence -> Organizer -> fake Xtream -> real filesystem.
             for (var mask = 0; mask < 64; mask++)
@@ -359,6 +407,19 @@ sealed class Fixture : HttpMessageHandler, IHttpClientFactory
     public bool BadImage;
     public bool InvalidLiveId;
     public bool AdultCategory;
+    public bool EmptyCatalog;
+    public string? GateAction;
+    public TaskCompletionSource Gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource GateEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private async Task<HttpResponseMessage> Deliver(HttpResponseMessage response, string action, CancellationToken token)
+    {
+        if (GateAction == action)
+        {
+            GateEntered.TrySetResult();
+            await Gate.Task.WaitAsync(token);
+        }
+        return response;
+    }
     public HttpClient CreateClient(string name) => new(this, false);
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
     {
@@ -367,10 +428,10 @@ sealed class Fixture : HttpMessageHandler, IHttpClientFactory
         if (uri.AbsolutePath == "/image")
         {
             Interlocked.Increment(ref ImageRequests);
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) {
+            return Deliver(new HttpResponseMessage(HttpStatusCode.OK) {
                 Content = new ByteArrayContent(BadImage ? Encoding.UTF8.GetBytes("<html>Error</html>") :
                     Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aU1sAAAAASUVORK5CYII="))
-            });
+            }, "/image", token);
         }
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         if (query["username"] != "user" || query["password"] != "secret")
@@ -394,9 +455,10 @@ sealed class Fixture : HttpMessageHandler, IHttpClientFactory
             """,
             _ => throw new Exception("Unexpected action: " + action)
         };
+        if (EmptyCatalog && action is "get_live_streams" or "get_vod_streams" or "get_series") json = "[]";
         if (AdultCategory && action == "get_vod_categories") json = json.Replace("Geral", "FILMES ADULTOS");
         if (InvalidLiveId && action == "get_live_streams") json = json.Replace("\"stream_id\":101", "\"stream_id\":\"invalid\"");
-        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") });
+        return Deliver(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") }, action, token);
     }
 }
 

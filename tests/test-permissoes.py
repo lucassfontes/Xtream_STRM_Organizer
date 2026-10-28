@@ -12,8 +12,8 @@ for name in ('docker-compose.github.yml','docker-compose.zimaos.yml','docker-com
     assert 'chown -R 1000:1000 /media' not in content
     assert 'chmod 777' not in content
     if name in ('docker-compose.github.yml','docker-compose.zimaos.yml'):
-        block=content.split('    command: |\n',1)[1].split('\n\n',1)[0]
-        commands.append('\n'.join(line[6:] for line in block.splitlines()))
+        block=content.split('    command:\n      - |\n',1)[1].split('\n\n',1)[0]
+        commands.append('\n'.join(line[10:] for line in block.splitlines()))
 assert commands[0]==commands[1]
 print('OK: Compose prepara subpastas antes do aplicativo; sem alterar arquivos de mídia.')
 with tempfile.TemporaryDirectory(prefix='xtream-permissions-') as temp:

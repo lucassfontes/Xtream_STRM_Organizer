@@ -88,6 +88,13 @@ public sealed class SyncStatus
     public bool Automatic { get; set; }
     public bool Running { get; set; }
     public string Phase { get; set; } = "Aguardando";
+    public long ItemsTotal { get; set; }
+    public long ItemsProcessed { get; set; }
+    public bool CatalogReady { get; set; }
+    public bool Completed { get; set; }
+    public int ProgressPercent => Completed ? 100 : ItemsTotal > 0
+        ? (int)Math.Clamp(100d * ItemsProcessed / ItemsTotal, 0, 99) : 0;
+    public bool ProgressIndeterminate => Running && (!CatalogReady || ItemsTotal == 0);
     public int Channels { get; set; }
     public int Movies { get; set; }
     public int Series { get; set; }

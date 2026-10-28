@@ -16,7 +16,7 @@ builder.Services.AddHostedService<AutoUpdateService>();
 builder.Services.AddHttpClient("xtream", c =>
 {
     c.Timeout = TimeSpan.FromSeconds(120);
-    c.DefaultRequestHeaders.UserAgent.ParseAdd("XtreamStrmOrganizer/1.8.4");
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("XtreamStrmOrganizer/1.8.5");
 });
 builder.Services.AddHttpClient("artwork", c => c.Timeout = TimeSpan.FromSeconds(30));
 var configFile = Path.GetFullPath(builder.Configuration["CONFIG_FILE"] ?? "/app/data/config.json");
@@ -112,7 +112,7 @@ app.MapPost("/api/auth/logout", async (HttpContext ctx) =>
 });
 app.MapGet("/api/auth/me", (HttpContext ctx) => Results.Ok(new { username = ctx.User.Identity?.Name }));
 
-app.MapGet("/health", () => Results.Ok(new { ok = true, app = "Xtream STRM Organizer", version = "1.8.4" }));
+app.MapGet("/health", () => Results.Ok(new { ok = true, app = "Xtream STRM Organizer", version = "1.8.5" }));
 app.MapGet("/api/profiles", (SettingsStore store) => Results.Ok(store.Profiles()));
 app.MapGet("/api/settings", IResult (SettingsStore store, string? id) =>
 {

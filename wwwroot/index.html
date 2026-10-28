@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="theme-color" content="#0b121c" />
-<link rel="icon" type="image/png" sizes="128x128" href="/icon.png?v=1.8.4" />
+<link rel="icon" type="image/png" sizes="128x128" href="/icon.png?v=1.8.5" />
 <title>Xtream STRM Organizer • Painel</title>
 <style>
 :root{color-scheme:dark;--bg:#0b121c;--card:#141e2b;--card2:#182433;--line:#293647;--input:#0b1522;--text:#ecf2f9;--muted:#97a5b8;--green:#45ddb5;--green2:#b2fbe4;--error:#ff9b9e;--font:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -20,13 +20,16 @@
 @media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto;padding:12px 16px;gap:12px}.nav{display:flex;gap:5px;overflow:auto}.nav a{white-space:nowrap;font-size:12px;padding:10px}.nav-title,.side-bottom,.version{display:none}.topbar{height:70px}.hero{padding:25px 0}.hero-aside{display:none}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:18px}}
 @media(max-width:460px){.field-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.badge{display:none}.metrics{gap:9px}.metric b{font-size:23px}.metrics .metric{padding:14px}.checks{display:grid;grid-template-columns:1fr}.actions .btn{flex:1}.hero h1{font-size:28px}}
 .schedule-highlight{display:flex;align-items:flex-start;gap:15px;background:linear-gradient(110deg,#173a34,#0e292e);border:1px solid #31735d;border-radius:15px;padding:20px;margin:18px 0 10px}.schedule-icon{display:grid;place-items:center;width:43px;height:43px;flex-shrink:0;font-size:24px;background:#285749;color:#a2ffdc;border-radius:12px}.schedule-kicker{font-size:10px;letter-spacing:1.5px;font-weight:900;color:#83dfc3;margin-bottom:8px}.schedule-highlight strong{font-size:clamp(18px,2.3vw,24px);color:#f5fff9;line-height:1.3}.schedule-highlight p{margin:7px 0 6px;color:#b2e8d7;font-size:12px}.schedule-zone{font-size:11px;color:#8ca9a5}.schedule-list-head{margin-top:21px;color:#c8dcd7;font-weight:700;font-size:12px}.schedule-list{display:grid;gap:7px;margin-top:10px}.schedule-list-item{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center;border:1px solid #304b47;background:#0f2027;border-radius:9px;padding:10px 13px;color:#cfe5dc;font-size:12px}.schedule-list-item span{color:#98b9ad}
+.meter.indeterminate .bar{animation:catalog-progress 1.4s ease-in-out infinite;transition:none}
+@keyframes catalog-progress{from{transform:translateX(-100%)}to{transform:translateX(290%)}}
+@media(prefers-reduced-motion:reduce){.meter.indeterminate .bar{animation:none}}
 </style>
-<link rel="stylesheet" href="/responsive.css?v=1.8.4" />
+<link rel="stylesheet" href="/responsive.css?v=1.8.5" />
 </head>
 <body>
 <div class="layout">
 <aside class="sidebar">
- <div class="brand"><span class="mark" style="background:transparent;box-shadow:none"><img src="/icon.png?v=1.8.4" alt="" width="41" height="41" /></span><span><strong>XTREAM</strong><small>STRM ORGANIZER</small></span></div>
+ <div class="brand"><span class="mark" style="background:transparent;box-shadow:none"><img src="/icon.png?v=1.8.5" alt="" width="41" height="41" /></span><span><strong>XTREAM</strong><small>STRM ORGANIZER</small></span></div>
  <nav class="nav" aria-label="Menu principal"><span class="nav-title">MENU PRINCIPAL</span>
   <a class="active" href="#painel"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Painel</a>
   <a href="#conexao"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="m7 3 5 4 5-4"/></svg>Conexão Xtream</a>
@@ -35,7 +38,7 @@
   <a href="#estrutura"><svg class="svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h7l2 3h9v11H3z"/></svg>Estrutura de pastas</a>
  </nav>
  <div class="side-bottom"><strong>◆ Sua biblioteca, organizada</strong><p>As categorias são preservadas exatamente como vêm da API, sem filtros de conteúdo.</p></div>
- <div class="version">Versão 1.8.4 • C# / Docker</div>
+ <div class="version">Versão 1.8.5 • C# / Docker</div>
 </aside>
 <main class="content" id="painel">
  <div class="topbar"><div class="crumb">Workspace <span aria-hidden="true"> / </span> <b>Visão geral</b></div><div class="right"><span class="badge"><span class="dot"></span>Painel conectado</span><button class="exit" id="logout" type="button">Sair da conta</button></div></div>
@@ -71,7 +74,7 @@
   </section>
   <section class="card" id="geracao"><header class="card-head"><div class="card-title"><span class="round-icon">⇩</span><div><h2>Gerador de biblioteca</h2><p>Acompanhe a organização dos arquivos</p></div></div></header>
    <div class="phase-head"><div><b>Estado do processamento</b><p>Sincronização Xtream → STRM</p></div><span class="phase" id="phase">Aguardando</span></div>
-   <div class="meter" role="progressbar" aria-label="Progresso de séries" aria-valuemin="0" aria-valuemax="100" id="meter"><div class="bar" id="bar"></div></div><div class="progress"><span id="progress">Aguardando início</span><strong id="pct">0%</strong></div>
+   <div class="meter" role="progressbar" aria-label="Progresso do catálogo selecionado" aria-valuemin="0" aria-valuemax="100" id="meter"><div class="bar" id="bar"></div></div><div class="progress"><span id="progress">Aguardando início</span><strong id="pct">0%</strong></div>
    <div class="progress-details" aria-live="off">
     <div><span>Detalhes reaproveitados</span><strong id="cachedCount">0</strong></div>
     <div><span>Consultas novas</span><strong id="fetchedCount">0</strong></div>
@@ -137,13 +140,13 @@
    <div class="separator"></div><p class="caption">Compatível com bibliotecas que suportam arquivos .strm, como Emby, Jellyfin e Kodi, conforme a configuração de cada player.</p>
   </section>
  </div>
- <div class="foot">Xtream STRM Organizer v1.8.4 • Sua biblioteca no seu próprio servidor</div>
+ <div class="foot">Xtream STRM Organizer v1.8.5 • Sua biblioteca no seu próprio servidor</div>
 </main>
 </div>
 <script>
 const $=id=>document.getElementById(id);
-async function api(path,method='GET',data){
- const response=await fetch(path,{method,credentials:'same-origin',headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined});
+async function api(path,method='GET',data,signal){
+ const response=await fetch(path,{method,signal,credentials:'same-origin',headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined});
  if(response.status===401){location.replace('/login');throw Error('Sessão expirada. Entre novamente.');}
  const result=await response.json().catch(()=>({error:'Resposta inesperada do servidor.'}));
  if(!response.ok)throw Error(result.error || 'Erro de comunicação.');return result;
@@ -245,9 +248,14 @@ function duration(seconds){
  if(n<3600)return `${Math.floor(n/60)}min ${n%60}s`;
  return `${Math.floor(n/3600)}h ${Math.floor(n%3600/60)}min`;
 }
+let statusInFlight=false;
 async function status(){
+ if(statusInFlight)return;
+ statusInFlight=true;
+ const controller=new AbortController();
+ const statusTimeout=setTimeout(()=>controller.abort(),10000);
  try{
-  const s=await api('/api/status');
+  const s=await api('/api/status','GET',undefined,controller.signal);
   $('phase').textContent=s.phase;$('channels').textContent=s.channels;$('films').textContent=s.movies;
   $('shows').textContent=s.series;$('episodes').textContent=s.episodes;
   $('start').disabled=s.running;$('cancel').disabled=!s.running;$('save').disabled=s.running;$('saveSchedule').disabled=s.running;
@@ -256,18 +264,24 @@ async function status(){
   $('reusedCount').textContent=s.filesReused||0;$('writtenCount').textContent=s.filesWritten||0;
   $('pendingCount').textContent=s.filesPending||0;$('writerCount').textContent=s.writeWorkers||4;
   $('speed').textContent='Velocidade: '+(s.seriesPerSecond?`${s.seriesPerSecond.toFixed(2)} séries/s`:'—');
-  $('eta').textContent='Tempo restante: '+(s.seriesTotal&&s.running?duration(s.etaSeconds):'—');
+  $('eta').textContent='Estimativa para séries: '+(s.seriesTotal>s.seriesProcessed&&s.running?duration(s.etaSeconds):'—');
   $('retries').textContent='Tentativas repetidas: '+(s.requestsRetried||0);
-  const completed=s.phase==='Concluído'||s.phase==='Concluído com avisos';
-  const seriesPct=s.seriesTotal?Math.min(100,Math.round(100*s.seriesProcessed/s.seriesTotal)):(completed?100:(s.running?10:0));
-  const pct=s.running&&s.filesPending>0?Math.min(99,seriesPct):seriesPct;
-  $('progress').textContent=(s.profileName?`${s.automatic?'Automática':'Manual'}: ${s.profileName} • `:'')+(s.seriesTotal?`Séries: ${s.seriesProcessed}/${s.seriesTotal} • Em fila: ${s.filesPending||0} • Avisos: ${s.errors}`:`Em fila: ${s.filesPending||0} • Avisos: ${s.errors}`);
-  $('bar').style.width=pct+'%';$('meter').setAttribute('aria-valuenow',String(pct));$('pct').textContent=pct+'%';
+  const pct=Math.max(0,Math.min(100,Number(s.progressPercent)||0));
+  const unknown=!!s.progressIndeterminate;
+  const prefix=s.profileName?`${s.automatic?'Automática':'Manual'}: ${s.profileName} • `:'';
+  const count=s.catalogReady?`Itens: ${s.itemsProcessed}/${s.itemsTotal} (canais, filmes e séries)`:'Calculando total do catálogo';
+  $('progress').textContent=prefix+(s.startedAt?count:'Aguardando início')+` • Episódios: ${s.episodes||0} • Em fila: ${s.filesPending||0} • Avisos: ${s.errors}`;
+  $('meter').classList.toggle('indeterminate',unknown);
+  $('bar').style.width=unknown?'35%':pct+'%';
+  if(unknown){$('meter').removeAttribute('aria-valuenow');}else{$('meter').setAttribute('aria-valuenow',String(pct));}
+  $('meter').setAttribute('aria-valuetext',unknown?'Calculando total':`${pct}% do catálogo processado`);
+  $('pct').textContent=unknown?'Calculando…':pct+'%';
   $('log').textContent=s.messages.join('\n')||'As mensagens aparecerão aqui.';
- }catch(e){$('phase').textContent='Sem conexão';}
+ }catch(e){$('phase').textContent='Sem conexão — aguardando atualização';}
+ finally{clearTimeout(statusTimeout);statusInFlight=false;}
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)status();});
-loadProfiles().catch(e=>notice(e.message,true));status();setInterval(()=>{if(!document.hidden)status();},2500);setInterval(()=>{if(!document.hidden)renderCountdown();},1000);
+loadProfiles().catch(e=>notice(e.message,true));status();setInterval(()=>{if(!document.hidden)status();},1000);setInterval(()=>{if(!document.hidden)renderCountdown();},1000);
 setInterval(async()=>{if(document.hidden)return;try{const savedId=currentProfileId;const data=await api('/api/profiles');knownProfiles=data;const selected=data.find(x=>x.id===savedId);if(selected){renderNext(selected);}renderScheduleList();}catch(e){}},15000);
 </script>
 </body></html>

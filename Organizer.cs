@@ -226,6 +226,8 @@ public sealed class Organizer
             return new SyncStatus
             {
                 Running = _status.Running, Phase = _status.Phase, ProfileName = _status.ProfileName, Automatic = _status.Automatic,
+                ItemsTotal = _status.ItemsTotal, ItemsProcessed = _status.ItemsProcessed,
+                CatalogReady = _status.CatalogReady, Completed = _status.Completed,
                 Channels = _status.Channels, Movies = _status.Movies, Series = _status.Series,
                 Episodes = _status.Episodes, Errors = _status.Errors,
                 SeriesProcessed = _status.SeriesProcessed, SeriesTotal = _status.SeriesTotal,
@@ -312,6 +314,12 @@ public sealed class Organizer
             await api.VerifyAsync(token);
             Say("Conexão validada.");
             if (settings.Movies) MovieFolders.Migrate(root, Say, token);
+            SetPhase("Calculando total do catálogo selecionado");
+            var liveItems = settings.Live ? await ReadCatalog(api, "get_live_streams", token) : [];
+            var movieItems = settings.Movies ? await ReadCatalog(api, "get_vod_streams", token) : [];
+            var seriesItems = settings.Series ? await ReadCatalog(api, "get_series", token) : [];
+            Update(s => { s.ItemsTotal = (long)liveItems.Length + movieItems.Length + seriesItems.Length; s.CatalogReady = true; });
+            Say($"Catálogo: {liveItems.Length} canais, {movieItems.Length} filmes e {seriesItems.Length} séries. Cada série avança após processar seus episódios e arquivos auxiliares.");
             // Modo permanente e não destrutivo: nunca substituímos ou limpamos a biblioteca.
             Directory.CreateDirectory(root);
             Say($"Gravação otimizada: {_writeWorkers} gravadores simultâneos, fila limitada e arquivos .strm existentes preservados.");
@@ -319,9 +327,9 @@ public sealed class Organizer
                 ex => IncrementError("metadados/capas", ex));
             if (settings.Live && (settings.LiveImages || settings.LiveNfo))
                 Say("TV: capas/NFOs são auxiliares para biblioteca de vídeos; não criam canais ou EPG no Live TV do Emby.");
-            if (settings.Live) await GenerateFlatAsync(writer, api, root, "TV ao vivo", "get_live_categories", "get_live_streams", "live", settings.LiveExtension, settings, metadata, token);
-            if (settings.Movies) await GenerateFlatAsync(writer, api, root, "Filmes", "get_vod_categories", "get_vod_streams", "movie", "mp4", settings, metadata, token);
-            if (settings.Series) await GenerateSeriesAsync(writer, api, root, settings, metadata, forceRefresh, token);
+            if (settings.Live) await GenerateFlatAsync(writer, api, root, "TV ao vivo", "get_live_categories", liveItems, "live", settings.LiveExtension, settings, metadata, token);
+            if (settings.Movies) await GenerateFlatAsync(writer, api, root, "Filmes", "get_vod_categories", movieItems, "movie", "mp4", settings, metadata, token);
+            if (settings.Series) await GenerateSeriesAsync(writer, api, root, settings, metadata, forceRefresh, seriesItems, token);
             SetPhase("Finalizando gravação dos arquivos .strm");
             await writer.CompleteAsync();
             token.ThrowIfCancellationRequested();
@@ -330,7 +338,7 @@ public sealed class Organizer
             Say($"Arquivos existentes ignorados e preservados: {snapshot.FilesReused}; arquivos novos criados: {snapshot.FilesWritten}.");
             Say($"Cache: {snapshot.SeriesCached} séries reaproveitadas, {snapshot.SeriesFetched} consultadas.");
             Say("Arquivos em: " + root);
-            SetPhase(snapshot.Errors == 0 ? "Concluído" : "Concluído com avisos");
+            Update(s => { s.Completed = true; s.Phase = snapshot.Errors == 0 ? "Concluído" : "Concluído com avisos"; });
         }
         catch (OperationCanceledException)
         {
@@ -399,15 +407,20 @@ public sealed class Organizer
         }
     }
 
+    private static async Task<JsonElement[]> ReadCatalog(XtreamClient api, string action, CancellationToken token)
+    {
+        using var doc = await api.RequestAsync(action, token);
+        var array = JsonUtil.Array(doc.RootElement).Clone();
+        return array.EnumerateArray().ToArray();
+    }
+
     private async Task GenerateFlatAsync(StrmWriteQueue writer, XtreamClient api, string root, string section, string categoriesAction,
-        string streamsAction, string kind, string defaultExtension, ConnectionSettings settings, MetadataWriter metadata, CancellationToken token)
+        JsonElement[] items, string kind, string defaultExtension, ConnectionSettings settings, MetadataWriter metadata, CancellationToken token)
     {
         SetPhase("Lendo " + section);
         Say("Consultando categorias e itens de " + section + "...");
         var categories = await Categories(api, categoriesAction, token);
-        using var doc = await api.RequestAsync(streamsAction, token);
-        var items = JsonUtil.Array(doc.RootElement);
-        foreach (var item in items.EnumerateArray())
+        foreach (var item in items)
         {
             token.ThrowIfCancellationRequested();
             var id = JsonUtil.String(item, "stream_id");
@@ -415,6 +428,7 @@ public sealed class Organizer
             {
                 IncrementError("STRM", new MediaWarningException("o STRM " + WarningText.Item(kind == "live" ? "canal" : "filme", JsonUtil.String(item, "name", "Sem nome")),
                     "não foi criado", new MediaInputException("O provedor não informou um identificador válido para este item.")));
+                Update(s => s.ItemsProcessed++);
                 continue;
             }
             var name = PathRules.SafeName(JsonUtil.String(item, "name"), kind == "live" ? "Canal" : "Filme");
@@ -443,17 +457,16 @@ public sealed class Organizer
             }
             if (kind == "live") Update(s => s.Channels++);
             else Update(s => s.Movies++);
+            Update(s => s.ItemsProcessed++);
         }
-        Say($"{section}: {items.GetArrayLength()} itens enviados ao processamento (gravação continua na fila).");
+        Say($"{section}: {items.Length} itens enviados ao processamento (gravação continua na fila).");
     }
 
     private async Task GenerateSeriesAsync(StrmWriteQueue writer, XtreamClient api, string root,
-        ConnectionSettings settings, MetadataWriter metadata, bool forceRefresh, CancellationToken token)
+        ConnectionSettings settings, MetadataWriter metadata, bool forceRefresh, JsonElement[] entries, CancellationToken token)
     {
         SetPhase("Lendo catálogo de séries");
         var cats = await Categories(api, "get_series_categories", token);
-        using var doc = await api.RequestAsync("get_series", token);
-        var entries = JsonUtil.Array(doc.RootElement).EnumerateArray().Select(e => e.Clone()).ToArray();
         var concurrency = settings.SeriesConcurrency is 4 or 8 or 16 ? settings.SeriesConcurrency : 8;
         var cache = new SeriesCache(_configFile, settings);
         Update(s => { s.SeriesTotal = entries.Length; s.SeriesStartedAt = DateTimeOffset.UtcNow; });
@@ -545,7 +558,7 @@ public sealed class Organizer
                             }
                         }
                     }
-                    Update(s => s.Series++);
+                    Update(s => { s.Series++; s.ItemsProcessed++; });
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
                 catch (Exception ex)

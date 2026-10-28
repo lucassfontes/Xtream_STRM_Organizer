@@ -1,3 +1,7 @@
+## Versão 1.8.5 — barra de progresso corrigida
+
+Agora contabiliza TV, filmes e séries, mostra o total processado e só chega a 100% ao concluir. Veja [ATUALIZACAO-1.8.5.md](ATUALIZACAO-1.8.5.md).
+
 ## Versão 1.8.4 — FILMES ADULTOS fora de Filmes
 
 A categoria `FILMES ADULTOS` agora fica ao lado de `Filmes`, `Series` e `TV ao vivo`. Veja [ATUALIZACAO-1.8.4.md](ATUALIZACAO-1.8.4.md) para a migração automática e cuidados com conflitos.
